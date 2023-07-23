@@ -229,8 +229,6 @@ static PyObject* Graph_add_edge(GraphObject* self, PyObject* args,
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn", kwlist, &u, &v))
     {
-        PyErr_SetString(PyExc_TypeError,
-                        "Graph.add_edge\n"); // TODO: make this more pythonic
         return NULL;
     }
 
@@ -294,8 +292,6 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "nnO", kwlist, &src, &dst,
                                      &weight))
     {
-        PyErr_SetString(PyExc_TypeError,
-                        "Graph.dijkstra_path"); // TODO: make this more pythonic
         return NULL;
     }
 
