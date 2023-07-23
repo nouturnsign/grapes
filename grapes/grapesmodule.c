@@ -355,7 +355,8 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     MinHeap* heap =
         MinHeap_alloc((self->node_count * (self->node_count - 1)) / 2);
     MinHeap_insert(heap, src, 0);
-    Py_ssize_t u, v, w;
+    Py_ssize_t u, v;
+    double     w;
     PyObject*  uvargs;
     PyObject*  ret_value;
     while (!MinHeap_is_empty(heap))
@@ -386,11 +387,11 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
                              weight, args);
                 return NULL;
             }
-            w = PyLong_AsSsize_t(ret_value);
+            w = PyFloat_AsDouble(ret_value);
             if (w == -1 && PyErr_Occurred() != NULL)
             {
                 PyErr_Format(PyExc_ValueError,
-                             "weight function returned a non-integer value "
+                             "weight function returned a non-float value "
                              "given ret_value=%R",
                              ret_value);
                 return NULL;
