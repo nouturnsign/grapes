@@ -194,6 +194,11 @@ static PyObject* Graph_add_node(GraphObject* self, PyObject* Py_UNUSED(ignored))
                          (void*) self->adj_list);
             return NULL;
         }
+        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i)
+        {
+            self->adj_list[i] = NULL;
+        }
+
         self->neighbor_count =
             realloc(self->neighbor_count,
                     sizeof(*self->neighbor_count) * self->max_node_count);
@@ -205,8 +210,13 @@ static PyObject* Graph_add_node(GraphObject* self, PyObject* Py_UNUSED(ignored))
                 (void*) self->neighbor_count);
             return NULL;
         }
+        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i)
+        {
+            self->neighbor_count[i] = 0;
+        }
+
         self->max_neighbor_count =
-            realloc(self->neighbor_count,
+            realloc(self->max_neighbor_count,
                     sizeof(*self->max_neighbor_count) * self->max_node_count);
         if (self->max_neighbor_count == NULL)
         {
@@ -215,6 +225,10 @@ static PyObject* Graph_add_node(GraphObject* self, PyObject* Py_UNUSED(ignored))
                 "Unable to realloc max_neighbor_count at memory address %p",
                 (void*) self->max_neighbor_count);
             return NULL;
+        }
+        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i)
+        {
+            self->max_neighbor_count[i] = 0;
         }
     }
 
