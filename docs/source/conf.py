@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.autodoc",
     "autoapi.extension",
+    "sphinx.ext.githubpages",
 ]
 autoapi_dirs = [os.path.abspath("../../src/grapes")]
 autoapi_generate_api_docs = False
