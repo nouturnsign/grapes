@@ -6,7 +6,7 @@
 Welcome to grapes's documentation!
 ==================================
 
-**grapes** is a WIP Python C extension for graphs. 
+**grapes-graph** is a WIP Python C extension for graphs. 
 
 Check out the :doc:`usage` section for further information, including how to :ref:`install <installation>` the project.
 
