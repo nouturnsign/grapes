@@ -1,11 +1,49 @@
-from typing import Callable, Literal, Self
+from typing import Callable, Self
 
-# TODO: add docstrings
 class Graph:
-    def __init__(self: Self, node_count: int) -> None: ...
-    def get_node_count(self: Self) -> int: ...
-    def add_node(self: Self) -> int: ...
-    def add_edge(self: Self, u: int, v: int) -> None: ...
+    """Simple, undirected graph.
+
+    .. note::
+        Nodes are represented as 0-based indices.
+    """
+
+    def __init__(self: Self, node_count: int) -> None:
+        """Initialize a simple, undirected graph;.
+
+        :param node_count: The initial number of nodes within the graph.
+        :type node_count: int
+        """
+    def get_node_count(self: Self) -> int:
+        """Get the number of nodes in the graph.
+
+        :rtype: int
+        """
+    def add_node(self: Self) -> int:
+        """Add a node to the graph.
+
+        :returns: The index to the new node added.
+        :rtype: int
+        """
+    def add_edge(self: Self, u: int, v: int) -> None:
+        """Add an undirected edge between two nodes. Adding duplicate edges will not raise an error.
+
+        :param u: node
+        :type u: int
+        :param v: node
+        :type v: int
+        :rtype: None
+        """
     def dijkstra_path(
         self: Self, src: int, dst: int, weight: Callable[[int, int], float]
-    ) -> list[int]: ...
+    ) -> list[int]:
+        """Get the shortest path in the graph using Dijkstra's algorithm.
+
+        :param src: Begin (source) node
+        :type src: int
+        :param dst: End (destination) node
+        :type dst: int
+        :param weight: Weight function that accepts two integers and returns the weight as a float.
+        :type weight: Callable[[int, int], float]
+        :return: List of nodes, starting from `src` and ending with `dst`. Returns an empty list if no path found.
+        :rtype: list[int]
+        """
