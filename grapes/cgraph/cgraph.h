@@ -2,8 +2,8 @@
 #include <Python.h>
 
 // module
-PyMODINIT_FUNC            PyInit_grapes(void);
-static struct PyModuleDef grapesmodule;
+PyMODINIT_FUNC            PyInit_cgraph(void);
+static struct PyModuleDef cgraphmodule;
 
 // classes
 typedef struct GraphObject GraphObject; // clang-format on

@@ -1,11 +1,11 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include "grapesmodule.h"
+#include "cgraph/cgraph.h"
 
 #include "heap.h"
 
-PyMODINIT_FUNC PyInit_grapes(void)
+PyMODINIT_FUNC PyInit_cgraph(void)
 {
     PyObject* m;
     if (PyType_Ready(&GraphType) < 0)
@@ -13,7 +13,7 @@ PyMODINIT_FUNC PyInit_grapes(void)
         return NULL;
     }
 
-    m = PyModule_Create(&grapesmodule);
+    m = PyModule_Create(&cgraphmodule);
     if (m == NULL)
     {
         return NULL;
@@ -30,11 +30,11 @@ PyMODINIT_FUNC PyInit_grapes(void)
     return m;
 }
 
-static struct PyModuleDef grapesmodule = {
+static struct PyModuleDef cgraphmodule = {
     // clang-format off
     PyModuleDef_HEAD_INIT,
-    .m_name = "grapes",
-    .m_doc = PyDoc_STR("Python graph module written in C"),
+    .m_name = "cgraph",
+    .m_doc = PyDoc_STR("Grapes core functionality written in C"),
     .m_size = -1,
 }; // clang-format on
 
@@ -51,7 +51,7 @@ typedef struct GraphObject
 // clang-format off
 static PyTypeObject GraphType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "grapes.Graph",
+    .tp_name = "grapes.cgraph.Graph",
     .tp_doc = PyDoc_STR("Undirected graph object."),
     .tp_basicsize = sizeof(GraphObject),
     .tp_itemsize = 0,
