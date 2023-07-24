@@ -1,7 +1,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include "cgraph/cgraph.h"
+#include "cgraph.h"
 
 #include "heap.h"
 
