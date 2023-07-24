@@ -8,7 +8,7 @@ class Graph:
     """
 
     def __init__(self: Self, node_count: int) -> None:
-        """Initialize a simple, undirected graph;.
+        """Initialize a simple, undirected graph.
 
         :param node_count: The initial number of nodes within the graph.
         :type node_count: int
@@ -25,7 +25,10 @@ class Graph:
         :rtype: int
         """
     def add_edge(self: Self, u: int, v: int) -> None:
-        """Add an undirected edge between two nodes. Adding duplicate edges will not raise an error.
+        """Add an undirected edge between two nodes.
+
+        .. warning::
+            Adding duplicate edges will not raise an error.
 
         :param u: node
         :type u: int
