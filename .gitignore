@@ -2,7 +2,7 @@
 sandbox/
 
 # Project-specific
-
+venv3.11/
 
 # Editor-specific
 .clang-format
