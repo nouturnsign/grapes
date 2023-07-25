@@ -167,8 +167,11 @@ static PyMethodDef Graph_methods[] = {
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Graph_add_edge, METH_VARARGS | METH_KEYWORDS,
      "Add an undirected edge to the graph given existing nodes."},
-    {"dijkstra_path", (PyCFunction) Graph_dijkstra_path, METH_VARARGS | METH_KEYWORDS,
+    {"dijkstra_path", (PyCFunction) Graph_dijkstra_path, 
+     METH_VARARGS | METH_KEYWORDS,
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
+    {"kruskal_mst", (PyCFunction) Graph_kruskal_mst, METH_O, 
+     "Find the minimum spanning tree between two nodes using Kruskal's algorithm"},
     {NULL}
 };
 // clang-format on
@@ -484,4 +487,25 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     heap = NULL;
 
     return path;
+}
+
+static PyObject* Graph_kruskal_mst(GraphObject* self, PyObject* args,
+                                   PyObject* kwds)
+{
+    // static char* kwlist[] = {"weight", NULL};
+    // PyObject*    weight = NULL;
+
+    // if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &weight))
+    // {
+    //     return NULL;
+    // }
+
+    // if (!PyCallable_Check(weight))
+    // {
+    //     PyErr_SetString(PyExc_TypeError, "weight must be callable.");
+    //     return NULL;
+    // }
+
+    PyErr_SetString(PyExc_NotImplementedError, "");
+    return NULL;
 }

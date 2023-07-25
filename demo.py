@@ -30,4 +30,6 @@ def weight(u, v):
     return weight_dict[(u, v)]
 
 
+print(g.get_node_count())
+print(g.get_edges())
 print(g.dijkstra_path(0, 4, weight))

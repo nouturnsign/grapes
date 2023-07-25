@@ -60,8 +60,21 @@ class Graph:
         :type src: int
         :param dst: End (destination) node
         :type dst: int
-        :param weight: Weight function that accepts two integers and returns the weight as a float.
+        :param weight: Weight function that accepts two integers and returns the
+            weight as a float.
         :type weight: Callable[[int, int], float]
-        :return: List of nodes, starting from `src` and ending with `dst`. Returns an empty list if no path found.
+        :return: List of nodes, starting from `src` and ending with `dst`.
+            Returns an empty list if no path found.
         :rtype: list[int]
+        """
+    def kruskal_mst(
+        self: Self, weight: Callable[[int, int], float]
+    ) -> list[tuple[int, int]]:
+        """Get the minimum spanning tree as a list of edges.
+
+        :param weight: Weight function that accepts two integers and returns the
+            weight as a float.
+        :type weight: Callable[[int, int], float]
+        :return: List of edges
+        :rtype: list[tuple[int, int]]
         """
