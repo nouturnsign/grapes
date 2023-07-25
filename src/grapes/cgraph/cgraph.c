@@ -31,27 +31,26 @@ PyMODINIT_FUNC PyInit_cgraph(void)
 }
 
 static struct PyModuleDef cgraphmodule = {
-    // clang-format off
     PyModuleDef_HEAD_INIT,
     .m_name = "cgraph",
     .m_doc = PyDoc_STR("Grapes core functionality written in C"),
     .m_size = -1,
-}; // clang-format on
+};
 
 typedef struct GraphObject
-{ // clang-format off
-    PyObject_HEAD
-    Py_ssize_t** adj_list; // list of adjacency lists (adj_list[i] = array of neighbors to node i)
-    Py_ssize_t node_count;
-    Py_ssize_t max_node_count; // current maximum number of nodes allocated
+{
+    PyObject_HEAD Py_ssize_t** adj_list; // list of adjacency lists (adj_list[i]
+                                         // = array of neighbors to node i)
+    Py_ssize_t  node_count;
+    Py_ssize_t  max_node_count; // current maximum number of nodes allocated
     Py_ssize_t* neighbor_count;
-    Py_ssize_t* max_neighbor_count; // current maximum number of neighbors (max_neighbor_count[i] = current maximum number of neighbors allocated to node i)
-} GraphObject; // clang-format on
+    Py_ssize_t* max_neighbor_count; // current maximum number of neighbors
+                                    // (max_neighbor_count[i] = current maximum
+                                    // number of neighbors allocated to node i)
+} GraphObject;
 
-// clang-format off
 static PyTypeObject GraphType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "grapes.cgraph.Graph",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "grapes.cgraph.Graph",
     .tp_doc = PyDoc_STR("Undirected graph object."),
     .tp_basicsize = sizeof(GraphObject),
     .tp_itemsize = 0,
@@ -61,7 +60,6 @@ static PyTypeObject GraphType = {
     .tp_init = (initproc) Graph_init,
     .tp_methods = Graph_methods,
 };
-// clang-format on
 
 static void Graph_dealloc(GraphObject* self)
 {
@@ -156,25 +154,22 @@ static int Graph_init(GraphObject* self, PyObject* args, PyObject* kwds)
     return 0;
 }
 
-// clang-format off
 static PyMethodDef Graph_methods[] = {
-    {"get_node_count", (PyCFunction) Graph_get_node_count, METH_NOARGS, 
-     "Return the number of nodes in the graph."
-    },
-    {"get_edges", (PyCFunction) Graph_get_edges, METH_NOARGS, 
+    {"get_node_count", (PyCFunction) Graph_get_node_count, METH_NOARGS,
+     "Return the number of nodes in the graph."},
+    {"get_edges", (PyCFunction) Graph_get_edges, METH_NOARGS,
      "Return the edges in the graph."},
-    {"add_node", (PyCFunction) Graph_add_node, METH_NOARGS, 
+    {"add_node", (PyCFunction) Graph_add_node, METH_NOARGS,
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Graph_add_edge, METH_VARARGS | METH_KEYWORDS,
      "Add an undirected edge to the graph given existing nodes."},
-    {"dijkstra_path", (PyCFunction) Graph_dijkstra_path, 
+    {"dijkstra_path", (PyCFunction) Graph_dijkstra_path,
      METH_VARARGS | METH_KEYWORDS,
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
-    {"kruskal_mst", (PyCFunction) Graph_kruskal_mst, METH_O, 
-     "Find the minimum spanning tree between two nodes using Kruskal's algorithm"},
-    {NULL}
-};
-// clang-format on
+    {"kruskal_mst", (PyCFunction) Graph_kruskal_mst, METH_O,
+     "Find the minimum spanning tree between two nodes using Kruskal's "
+     "algorithm"},
+    {NULL}};
 
 static PyObject* Graph_get_node_count(GraphObject* self,
                                       PyObject*    Py_UNUSED(ignored))
@@ -492,20 +487,17 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
 static PyObject* Graph_kruskal_mst(GraphObject* self, PyObject* args,
                                    PyObject* kwds)
 {
-    // static char* kwlist[] = {"weight", NULL};
-    // PyObject*    weight = NULL;
+    static char* kwlist[] = {"weight", NULL};
+    PyObject*    weight = NULL;
 
-    // if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &weight))
-    // {
-    //     return NULL;
-    // }
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &weight))
+    {
+        return NULL;
+    }
 
-    // if (!PyCallable_Check(weight))
-    // {
-    //     PyErr_SetString(PyExc_TypeError, "weight must be callable.");
-    //     return NULL;
-    // }
-
-    PyErr_SetString(PyExc_NotImplementedError, "");
-    return NULL;
+    if (!PyCallable_Check(weight))
+    {
+        PyErr_SetString(PyExc_TypeError, "weight must be callable.");
+        return NULL;
+    }
 }

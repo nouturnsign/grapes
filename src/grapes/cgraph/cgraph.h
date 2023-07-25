@@ -6,7 +6,7 @@ PyMODINIT_FUNC            PyInit_cgraph(void);
 static struct PyModuleDef cgraphmodule;
 
 // classes
-typedef struct GraphObject GraphObject; // clang-format on
+typedef struct GraphObject GraphObject;
 static PyTypeObject        GraphType;
 static void                Graph_dealloc(GraphObject* self);
 static PyObject* Graph_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
