@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools ~= 67.0"]
+requires = ["setuptools ~= 63.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "grapes-graph"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python graph library written in C"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 license = { text = "MIT License" }
 authors = [{ name = "Eric Wang", email = "ericwangyy@ucla.edu" }]
 keywords = ["graph"]
@@ -15,9 +15,16 @@ classifiers = [
     "Development Status :: 1 - Planning",
     "Programming Language :: C",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["src"]
