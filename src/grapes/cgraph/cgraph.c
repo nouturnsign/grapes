@@ -161,6 +161,8 @@ static PyMethodDef Graph_methods[] = {
     {"get_node_count", (PyCFunction) Graph_get_node_count, METH_NOARGS, 
      "Return the number of nodes in the graph."
     },
+    {"get_edges", (PyCFunction) Graph_get_edges, METH_NOARGS, 
+     "Return the edges in the graph."},
     {"add_node", (PyCFunction) Graph_add_node, METH_NOARGS, 
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Graph_add_edge, METH_VARARGS | METH_KEYWORDS,
@@ -175,6 +177,41 @@ static PyObject* Graph_get_node_count(GraphObject* self,
                                       PyObject*    Py_UNUSED(ignored))
 {
     return PyLong_FromSsize_t(self->node_count);
+}
+
+static PyObject* Graph_get_edges(GraphObject* self,
+                                 PyObject*    Py_UNUSED(ignored))
+{
+    PyObject* edges = PyList_New(0);
+    if (edges == NULL)
+    {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize edges list");
+    }
+
+    PyObject* uv;
+    for (Py_ssize_t u = 0; u < self->node_count; ++u)
+    {
+        for (Py_ssize_t i = 0; i < self->neighbor_count[u]; ++i)
+        {
+            Py_ssize_t v = self->adj_list[u][i];
+            if (u > v)
+            {
+                continue;
+            }
+            uv = Py_BuildValue("(nn)", u, v);
+            if (uv == NULL)
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "Unable to format uv given u=%ld and v=%ld", u, v);
+                return NULL;
+            }
+            if (PyList_Append(edges, uv) == -1)
+            {
+                return NULL;
+            }
+        }
+    }
+    return edges;
 }
 
 static PyObject* Graph_add_node(GraphObject* self, PyObject* Py_UNUSED(ignored))

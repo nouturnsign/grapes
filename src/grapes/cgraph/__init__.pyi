@@ -23,6 +23,16 @@ class Graph:
 
         :rtype: int
         """
+    def get_edges(self: Self) -> list[tuple[int, int]]:
+        """Get the edges in the graph.
+
+        .. warning::
+            If (u, v) is in edges, (v, u) will not also be returned. However,
+            duplicate inserted edges will still be duplicated.
+
+        :returns: List of edges
+        :rtype: list[tuple[int, int]]
+        """
     def add_node(self: Self) -> int:
         """Add a node to the graph.
 
