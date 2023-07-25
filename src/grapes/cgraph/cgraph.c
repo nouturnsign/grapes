@@ -371,7 +371,7 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
                 continue;
             }
             uvargs = Py_BuildValue("(nn)", u, v);
-            if (args == NULL)
+            if (uvargs == NULL)
             {
                 PyErr_Format(PyExc_TypeError,
                              "Unable to format args given u=%ld and v=%ld", u,
