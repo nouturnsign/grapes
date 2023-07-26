@@ -193,18 +193,19 @@ static PyObject* Graph_get_edge_count(GraphObject* self,
 static PyObject* Graph_get_edges(GraphObject* self,
                                  PyObject*    Py_UNUSED(ignored))
 {
-    PyObject* edges = PyList_New(0);
+    PyObject* edges = PyList_New(self->edge_count);
     if (edges == NULL)
     {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize edges list");
     }
 
-    PyObject* uv;
+    Py_ssize_t i = 0;
+    PyObject*  uv;
     for (Py_ssize_t u = 0; u < self->node_count; ++u)
     {
-        for (Py_ssize_t i = 0; i < self->neighbor_count[u]; ++i)
+        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j)
         {
-            Py_ssize_t v = self->adj_list[u][i];
+            Py_ssize_t v = self->adj_list[u][j];
             if (u > v)
             {
                 continue;
@@ -216,10 +217,11 @@ static PyObject* Graph_get_edges(GraphObject* self,
                              "Unable to format uv given u=%ld and v=%ld", u, v);
                 return NULL;
             }
-            if (PyList_Append(edges, uv) == -1)
+            if (PyList_SetItem(edges, i, uv) == -1)
             {
                 return NULL;
             }
+            ++i;
         }
     }
     return edges;
