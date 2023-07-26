@@ -23,6 +23,11 @@ class Graph:
 
         :rtype: int
         """
+    def get_edge_count(self: Self) -> int:
+        """Get the number of edges in the graph.
+
+        :rtype: int
+        """
     def get_edges(self: Self) -> list[tuple[int, int]]:
         """Get the edges in the graph.
 

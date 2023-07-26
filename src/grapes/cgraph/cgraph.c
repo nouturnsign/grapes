@@ -47,6 +47,7 @@ typedef struct GraphObject
     Py_ssize_t* max_neighbor_count; // current maximum number of neighbors
                                     // (max_neighbor_count[i] = current maximum
                                     // number of neighbors allocated to node i)
+    Py_ssize_t edge_count;
 } GraphObject;
 
 static PyTypeObject GraphType = {
@@ -88,6 +89,7 @@ static PyObject* Graph_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
         self->max_node_count = 0;
         self->neighbor_count = NULL;
         self->max_neighbor_count = NULL;
+        self->edge_count = 0;
     }
     return (PyObject*) self;
 }
@@ -151,12 +153,17 @@ static int Graph_init(GraphObject* self, PyObject* args, PyObject* kwds)
     {
         self->max_neighbor_count[i] = 0;
     }
+
+    self->edge_count = 0;
+
     return 0;
 }
 
 static PyMethodDef Graph_methods[] = {
     {"get_node_count", (PyCFunction) Graph_get_node_count, METH_NOARGS,
      "Return the number of nodes in the graph."},
+    {"get_edge_count", (PyCFunction) Graph_get_edge_count, METH_NOARGS,
+     "Return the number of edges in the graph."},
     {"get_edges", (PyCFunction) Graph_get_edges, METH_NOARGS,
      "Return the edges in the graph."},
     {"add_node", (PyCFunction) Graph_add_node, METH_NOARGS,
@@ -327,6 +334,8 @@ static PyObject* Graph_add_edge(GraphObject* self, PyObject* args,
         }
     }
     self->adj_list[v][self->neighbor_count[v]++] = u;
+
+    ++self->edge_count;
 
     Py_RETURN_NONE;
 }
