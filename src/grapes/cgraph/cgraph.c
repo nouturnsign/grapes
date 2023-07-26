@@ -184,6 +184,12 @@ static PyObject* Graph_get_node_count(GraphObject* self,
     return PyLong_FromSsize_t(self->node_count);
 }
 
+static PyObject* Graph_get_edge_count(GraphObject* self,
+                                      PyObject*    Py_UNUSED(ignored))
+{
+    return PyLong_FromSsize_t(self->edge_count);
+}
+
 static PyObject* Graph_get_edges(GraphObject* self,
                                  PyObject*    Py_UNUSED(ignored))
 {
@@ -509,4 +515,29 @@ static PyObject* Graph_kruskal_mst(GraphObject* self, PyObject* args,
         PyErr_SetString(PyExc_TypeError, "weight must be callable.");
         return NULL;
     }
+
+    Py_ssize_t* forest = malloc(sizeof(*forest) * self->node_count);
+    if (forest == NULL)
+    {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc dist at memory address %p",
+                     (void*) forest);
+        return NULL;
+    }
+
+    // make set
+    for (Py_ssize_t i = 0; i < self->node_count; ++i)
+    {
+        forest[i] = i;
+    }
+
+    Py_ssize_t u, v;
+
+    PyObject* edges = PyList_New(0);
+    if (edges == NULL)
+    {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize edges list");
+    }
+
+    return edges;
 }
