@@ -72,14 +72,3 @@ class Graph:
             Returns an empty list if no path found.
         :rtype: list[int]
         """
-    def kruskal_mst(
-        self: Self, weight: Callable[[int, int], float]
-    ) -> list[tuple[int, int]]:
-        """Get the minimum spanning tree as a list of edges.
-
-        :param weight: Weight function that accepts two integers and returns the
-            weight as a float.
-        :type weight: Callable[[int, int], float]
-        :return: List of edges
-        :rtype: list[tuple[int, int]]
-        """
