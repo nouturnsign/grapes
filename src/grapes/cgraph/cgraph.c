@@ -173,9 +173,6 @@ static PyMethodDef Graph_methods[] = {
     {"dijkstra_path", (PyCFunction) Graph_dijkstra_path,
      METH_VARARGS | METH_KEYWORDS,
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
-    {"kruskal_mst", (PyCFunction) Graph_kruskal_mst, METH_O,
-     "Find the minimum spanning tree between two nodes using Kruskal's "
-     "algorithm"},
     {NULL}};
 
 static PyObject* Graph_get_node_count(GraphObject* self,
@@ -422,30 +419,9 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
             {
                 continue;
             }
-            uvargs = Py_BuildValue("(nn)", u, v);
-            if (uvargs == NULL)
-            {
-                PyErr_Format(PyExc_TypeError,
-                             "Unable to format args given u=%ld and v=%ld", u,
-                             v);
-                return NULL;
-            }
-            ret_value = PyObject_Call(weight, uvargs, NULL);
-            if (ret_value == NULL)
-            {
-                PyErr_Format(PyExc_TypeError,
-                             "Unable to call weight function on args given "
-                             "weight=%R and args=%R",
-                             weight, args);
-                return NULL;
-            }
-            w = PyFloat_AsDouble(ret_value);
+            w = get_weight(weight, u, v);
             if (w == -1 && PyErr_Occurred() != NULL)
             {
-                PyErr_Format(PyExc_ValueError,
-                             "weight function returned a non-float value "
-                             "given ret_value=%R",
-                             ret_value);
                 return NULL;
             }
 
@@ -501,45 +477,38 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     return path;
 }
 
-static PyObject* Graph_kruskal_mst(GraphObject* self, PyObject* args,
-                                   PyObject* kwds)
+double get_weight(PyObject* weight, Py_ssize_t u, Py_ssize_t v)
 {
-    static char* kwlist[] = {"weight", NULL};
-    PyObject*    weight = NULL;
+    const int failed = -1;
+    double    w;
+    PyObject* uvargs;
+    PyObject* ret_value;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &weight))
+    uvargs = Py_BuildValue("(nn)", u, v);
+    if (uvargs == NULL)
     {
-        return NULL;
+        PyErr_Format(PyExc_TypeError,
+                     "Unable to format args given u=%ld and v=%ld", u, v);
+        return failed;
+    }
+    ret_value = PyObject_Call(weight, uvargs, NULL);
+    if (ret_value == NULL)
+    {
+        PyErr_Format(PyExc_TypeError,
+                     "Unable to call weight function on args given "
+                     "weight=%R and uvargs=%R",
+                     weight, uvargs);
+        return failed;
+    }
+    w = PyFloat_AsDouble(ret_value);
+    if (w == -1 && PyErr_Occurred() != NULL)
+    {
+        PyErr_Format(PyExc_ValueError,
+                     "weight function returned a non-float value "
+                     "given ret_value=%R",
+                     ret_value);
+        return failed;
     }
 
-    if (!PyCallable_Check(weight))
-    {
-        PyErr_SetString(PyExc_TypeError, "weight must be callable.");
-        return NULL;
-    }
-
-    Py_ssize_t* forest = malloc(sizeof(*forest) * self->node_count);
-    if (forest == NULL)
-    {
-        PyErr_Format(PyExc_MemoryError,
-                     "Unable to malloc dist at memory address %p",
-                     (void*) forest);
-        return NULL;
-    }
-
-    // make set
-    for (Py_ssize_t i = 0; i < self->node_count; ++i)
-    {
-        forest[i] = i;
-    }
-
-    Py_ssize_t u, v;
-
-    PyObject* edges = PyList_New(0);
-    if (edges == NULL)
-    {
-        PyErr_SetString(PyExc_MemoryError, "Unable to initialize edges list");
-    }
-
-    return edges;
+    return w;
 }
