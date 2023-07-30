@@ -1,3 +1,6 @@
+#ifndef GRAPES_GRAPES_CGRAPH_HEAP_H_
+#define GRAPES_GRAPES_CGRAPH_HEAP_H_
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -12,3 +15,5 @@ int        MinHeap_is_empty(MinHeap* heap);
 void       MinHeap_siftdown(MinHeap* heap, Py_ssize_t startpos, Py_ssize_t pos);
 void       MinHeap_siftup(MinHeap* heap, Py_ssize_t pos);
 void       MinHeap_print(MinHeap* heap);
+
+#endif // GRAPES_GRAPES_CGRAPH_HEAP_H_
