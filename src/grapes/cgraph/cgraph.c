@@ -394,11 +394,11 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     for (Py_ssize_t i = 0; i < self->node_count; ++i)
     {
         dist[i] = PY_SSIZE_T_MAX;
-        visited[i] = 0;
+        visited[i] = GRAPES_FALSE;
         prev[i] = self->node_count;
     }
     dist[src] = 0;
-    visited[src] = 1;
+    visited[src] = GRAPES_TRUE;
     prev[src] = src;
 
     MinHeap* heap =
@@ -411,7 +411,7 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     while (!MinHeap_is_empty(heap))
     {
         u = MinHeap_extract_min(heap);
-        visited[u] = 1;
+        visited[u] = GRAPES_TRUE;
         for (Py_ssize_t i = 0; i < self->neighbor_count[u]; ++i)
         {
             v = self->adj_list[u][i];
