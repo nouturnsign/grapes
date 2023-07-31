@@ -35,7 +35,7 @@ static PyObject *Graph_get_component_sizes(GraphObject *self, PyObject *args,
 #define GRAPES_FALSE 0
 #define GRAPES_TRUE 1
 #define GRAPES_RED 0
-#define GRAPES_BLUE 0
+#define GRAPES_BLUE 1
 #define GRAPES_NO_COLOR -1
 double     get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v);
 Py_ssize_t visit(GraphObject *graph, Py_ssize_t src, short *visited);
