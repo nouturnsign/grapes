@@ -61,11 +61,15 @@ class Graph:
     ) -> list[int]:
         """Get the shortest path in the graph using Dijkstra's algorithm.
 
+        .. note::
+            The weight function should accept both (u, v) and (v, u) as
+            potential inputs.
+
         :param src: Begin (source) node
         :type src: int
         :param dst: End (destination) node
         :type dst: int
-        :param weight: Weight function that accepts two integers and returns the
+        :param weight: Weight function that accepts two nodes and returns the
             weight as a float.
         :type weight: Callable[[int, int], float]
         :return: List of nodes, starting from `src` and ending with `dst`.
@@ -80,6 +84,6 @@ class Graph:
     def is_bipartite(self: Self) -> bool:
         """Return whether the graph is bipartite or not.
 
-        :returns: Returns `True` if the graph is bipartite; otherwise, False.
+        :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
         """
