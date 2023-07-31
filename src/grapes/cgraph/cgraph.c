@@ -174,8 +174,8 @@ static PyMethodDef Graph_methods[] = {
     {"dijkstra_path", (PyCFunction) Graph_dijkstra_path,
      METH_VARARGS | METH_KEYWORDS,
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
-    {"get_component_count", (PyCFunction) Graph_get_component_count,
-     METH_NOARGS, "Return the number of components in the graph."},
+    {"get_component_sizes", (PyCFunction) Graph_get_component_sizes,
+     METH_NOARGS, "Return the sizes of the components in the graph."},
     {NULL}};
 
 static PyObject* Graph_get_node_count(GraphObject* self,
@@ -480,11 +480,18 @@ static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
     return path;
 }
 
-static PyObject* Graph_get_component_count(GraphObject* self, PyObject* args,
+static PyObject* Graph_get_component_sizes(GraphObject* self, PyObject* args,
                                            PyObject* kwds)
 {
-    Py_ssize_t count = 0;
-    short*     visited = malloc(sizeof(*visited) * self->node_count);
+    Py_ssize_t* sizes = malloc(sizeof(*sizes) * self->node_count);
+    if (sizes == NULL)
+    {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc sizes at memory address %p",
+                     (void*) sizes);
+        return NULL;
+    }
+    short* visited = malloc(sizeof(*visited) * self->node_count);
     if (visited == NULL)
     {
         PyErr_Format(PyExc_MemoryError,
@@ -494,18 +501,36 @@ static PyObject* Graph_get_component_count(GraphObject* self, PyObject* args,
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i)
     {
+        sizes[i] = 0;
         visited[i] = GRAPES_FALSE;
     }
 
+    Py_ssize_t count = 0;
     for (Py_ssize_t i = 0; i < self->node_count; ++i)
     {
         if (!visited[i])
         {
-            visit(self, i, visited);
-            ++count;
+            sizes[count++] = visit(self, i, visited);
         }
     }
-    return PyLong_FromSsize_t(count);
+
+    PyObject* component_sizes = PyList_New(count);
+    if (component_sizes == NULL)
+    {
+        PyErr_SetString(PyExc_MemoryError,
+                        "Unable to initialize component_sizes");
+    }
+
+    for (Py_ssize_t i = 0; i < count; ++i)
+    {
+        if (PyList_SetItem(component_sizes, i, PyLong_FromSsize_t(sizes[i])) ==
+            -1)
+        {
+            return NULL;
+        }
+    }
+
+    return component_sizes;
 }
 
 double get_weight(PyObject* weight, Py_ssize_t u, Py_ssize_t v)
@@ -544,23 +569,25 @@ double get_weight(PyObject* weight, Py_ssize_t u, Py_ssize_t v)
     return w;
 }
 
-void visit(GraphObject* graph, Py_ssize_t src, short* visited)
+Py_ssize_t visit(GraphObject* graph, Py_ssize_t src, short* visited)
 {
-    Deque* queue = Deque_alloc(); // push_back, pop_front
     visited[src] = GRAPES_TRUE;
+    Py_ssize_t size = 1;
+    Deque*     queue = Deque_alloc(); // push_back, pop_front
     Deque_push_back(queue, src);
     while (!Deque_is_empty(queue))
     {
         Py_ssize_t curr = Deque_pop_front(queue);
-        visited[curr] = GRAPES_TRUE;
         for (Py_ssize_t j = 0; j < graph->neighbor_count[curr]; ++j)
         {
             Py_ssize_t neighbor = graph->adj_list[curr][j];
             if (!visited[neighbor])
             {
+                visited[neighbor] = GRAPES_TRUE;
+                ++size;
                 Deque_push_back(queue, neighbor);
             }
         }
     }
-    return;
+    return size;
 }
