@@ -23,7 +23,7 @@ IncludeCategories:
   - Regex: '<Python.h>'
     Priority: -1
     CaseSensitive: true
-  - Regex: '<[[:alnum:].]+>'
+  - Regex: '<[[:alnum:]./]+>'
     Priority: 1
   - Regex: '.*'
     Priority: 2
