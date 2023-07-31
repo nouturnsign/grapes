@@ -72,3 +72,8 @@ class Graph:
             Returns an empty list if no path found.
         :rtype: list[int]
         """
+    def get_component_count(self: Self) -> int:
+        """Return the number of components in the graph.
+
+        :rtype: int
+        """

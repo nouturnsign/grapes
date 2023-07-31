@@ -28,12 +28,13 @@ static PyObject* Graph_add_edge(GraphObject* self, PyObject* args,
                                 PyObject* kwds);
 static PyObject* Graph_dijkstra_path(GraphObject* self, PyObject* args,
                                      PyObject* kwds);
-static PyObject* Graph_get_number_of_components(GraphObject* self,
-                                                PyObject* args, PyObject* kwds);
+static PyObject* Graph_get_component_count(GraphObject* self, PyObject* args,
+                                           PyObject* kwds);
 
 // internals
 #define GRAPES_FALSE 0;
 #define GRAPES_TRUE 1;
 double get_weight(PyObject* weight, Py_ssize_t u, Py_ssize_t v);
+void   visit(GraphObject* graph, Py_ssize_t src, short* visited);
 
 #endif // GRAPES_GRAPES_CGRAPH_CGRAPH_H_
