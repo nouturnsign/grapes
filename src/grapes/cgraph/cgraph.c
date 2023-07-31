@@ -383,8 +383,6 @@ Graph_dijkstra_path(GraphObject *self, PyObject *args, PyObject *kwds)
     MinHeap_insert(heap, src, 0);
     Py_ssize_t u, v;
     double     w;
-    PyObject  *uvargs;
-    PyObject  *ret_value;
     while (!MinHeap_is_empty(heap)) {
         u = MinHeap_extract_min(heap);
         visited[u] = GRAPES_TRUE;
