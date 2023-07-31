@@ -481,6 +481,10 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
         }
     }
 
+    free(sizes);
+    sizes = NULL;
+    free(visited);
+    visited = NULL;
     return component_sizes;
 }
 
@@ -536,5 +540,6 @@ visit(GraphObject *graph, Py_ssize_t src, short *visited)
             }
         }
     }
+    Deque_free(queue);
     return size;
 }
