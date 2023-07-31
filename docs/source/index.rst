@@ -16,7 +16,7 @@ Contents
 .. toctree::
 
    usage
-   api
+   autoapi/grapes/index
 
 Indices and tables
 ==================

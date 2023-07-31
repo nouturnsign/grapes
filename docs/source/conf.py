@@ -26,12 +26,21 @@ extensions = [
     "sphinx.ext.githubpages",
 ]
 autoapi_dirs = [os.path.abspath("../../src/grapes")]
-autoapi_generate_api_docs = False
 autoapi_add_toctree_entry = False
 autoapi_python_use_implicit_namespaces = True
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
+
+def skip_cgraph(app, what, name, obj, skip, options):
+    if what == "package" and "cgraph" in name:
+        skip = True
+    return skip
+
+
+def setup(sphinx):
+    sphinx.connect("autoapi-skip-member", skip_cgraph)
 
 
 # -- Options for HTML output -------------------------------------------------
