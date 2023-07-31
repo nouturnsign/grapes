@@ -8,7 +8,6 @@ venv3.10/
 venv3.11/
 
 # Editor-specific
-.clang-format
 .vscode/
 compile_flags.txt
 

@@ -3,24 +3,22 @@
 
 #include "deque.h"
 
-typedef struct DequeNode
-{
+typedef struct DequeNode {
     Py_ssize_t value;
-    DequeNode* prev;
-    DequeNode* next;
+    DequeNode *prev;
+    DequeNode *next;
 } DequeNode;
 
-typedef struct Deque
-{
-    DequeNode* head;
-    DequeNode* tail;
+typedef struct Deque {
+    DequeNode *head;
+    DequeNode *tail;
 } Deque;
 
-Deque* Deque_alloc()
+Deque *
+Deque_alloc()
 {
-    Deque* deque = malloc(sizeof(*deque));
-    if (deque == NULL)
-    {
+    Deque *deque = malloc(sizeof(*deque));
+    if (deque == NULL) {
         fprintf(stderr, "Failed to allocate deque\n");
         return NULL;
     }
@@ -30,12 +28,12 @@ Deque* Deque_alloc()
     return deque;
 }
 
-void Deque_free(Deque* deque)
+void
+Deque_free(Deque *deque)
 {
-    DequeNode* curr = deque->head;
-    DequeNode* next;
-    while (curr != NULL)
-    {
+    DequeNode *curr = deque->head;
+    DequeNode *next;
+    while (curr != NULL) {
         next = curr->next;
         free(curr);
         curr = next;
@@ -44,24 +42,22 @@ void Deque_free(Deque* deque)
     deque = NULL;
 }
 
-void Deque_push_front(Deque* deque, Py_ssize_t value)
+void
+Deque_push_front(Deque *deque, Py_ssize_t value)
 {
-    DequeNode* curr = malloc(sizeof(*curr));
-    if (curr == NULL)
-    {
+    DequeNode *curr = malloc(sizeof(*curr));
+    if (curr == NULL) {
         fprintf(stderr, "Failed to allocate curr node\n");
         return;
     }
 
     curr->prev = NULL;
     curr->value = value;
-    DequeNode* head = deque->head;
-    if (head == NULL)
-    {
+    DequeNode *head = deque->head;
+    if (head == NULL) {
         deque->tail = curr;
     }
-    else
-    {
+    else {
         head->prev = curr;
     }
 
@@ -69,35 +65,33 @@ void Deque_push_front(Deque* deque, Py_ssize_t value)
     deque->head = curr;
 }
 
-Py_ssize_t Deque_pop_front(Deque* deque)
+Py_ssize_t
+Deque_pop_front(Deque *deque)
 {
     Py_ssize_t value = deque->head->value;
     deque->head = deque->head->next;
-    if (deque->head == NULL)
-    {
+    if (deque->head == NULL) {
         deque->tail = NULL;
     }
     return value;
 }
 
-void Deque_push_back(Deque* deque, Py_ssize_t value)
+void
+Deque_push_back(Deque *deque, Py_ssize_t value)
 {
-    DequeNode* curr = malloc(sizeof(*curr));
-    if (curr == NULL)
-    {
+    DequeNode *curr = malloc(sizeof(*curr));
+    if (curr == NULL) {
         fprintf(stderr, "Failed to allocate curr node\n");
         return;
     }
 
     curr->next = NULL;
     curr->value = value;
-    DequeNode* tail = deque->tail;
-    if (tail == NULL)
-    {
+    DequeNode *tail = deque->tail;
+    if (tail == NULL) {
         deque->head = curr;
     }
-    else
-    {
+    else {
         tail->next = curr;
     }
 
@@ -105,28 +99,29 @@ void Deque_push_back(Deque* deque, Py_ssize_t value)
     deque->tail = curr;
 }
 
-Py_ssize_t Deque_pop_back(Deque* deque)
+Py_ssize_t
+Deque_pop_back(Deque *deque)
 {
     Py_ssize_t value = deque->tail->value;
     deque->tail = deque->tail->prev;
-    if (deque->tail == NULL)
-    {
+    if (deque->tail == NULL) {
         deque->head = NULL;
     }
     return value;
 }
 
-short Deque_is_empty(Deque* deque)
+short
+Deque_is_empty(Deque *deque)
 {
     return (deque->head == NULL && deque->tail == NULL);
 }
 
-void Deque_print(Deque* deque)
+void
+Deque_print(Deque *deque)
 {
     printf("deque values=");
-    DequeNode* curr = deque->head;
-    while (curr != NULL)
-    {
+    DequeNode *curr = deque->head;
+    while (curr != NULL) {
         printf("%ld, ", curr->value);
         curr = curr->next;
     }
