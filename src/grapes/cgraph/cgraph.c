@@ -169,6 +169,8 @@ static PyMethodDef Graph_methods[] = {
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
     {"get_component_sizes", (PyCFunction) Graph_get_component_sizes,
      METH_NOARGS, "Return the sizes of the components in the graph."},
+    {"is_bipartite", (PyCFunction) Graph_is_bipartite, METH_NOARGS,
+     "Return whether the graph is bipartite or not."},
     {NULL}};
 
 static PyObject *
@@ -488,6 +490,28 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
     return component_sizes;
 }
 
+static PyObject *
+Graph_is_bipartite(GraphObject *self, PyObject *args, PyObject *kwds)
+{
+    short *color = malloc(sizeof(*color) * self->node_count);
+    if (color == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc color at memory address %p",
+                     (void *) color);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        color[i] = GRAPES_NO_COLOR;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        if (!visit_color(self, i, color)) {
+            Py_RETURN_FALSE;
+        }
+    }
+    Py_RETURN_TRUE;
+}
+
 double
 get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
 {
@@ -542,4 +566,32 @@ visit(GraphObject *graph, Py_ssize_t src, short *visited)
     }
     Deque_free(queue);
     return size;
+}
+
+short
+visit_color(GraphObject *graph, Py_ssize_t src, short *color)
+{
+    if (color[src] != GRAPES_NO_COLOR) {
+        return GRAPES_TRUE;
+    }
+    color[src] = GRAPES_RED;
+    Deque *queue = Deque_alloc();  // push_back, pop_front
+    Deque_push_back(queue, src);
+    while (!Deque_is_empty(queue)) {
+        Py_ssize_t curr = Deque_pop_front(queue);
+        for (Py_ssize_t j = 0; j < graph->neighbor_count[curr]; ++j) {
+            Py_ssize_t neighbor = graph->adj_list[curr][j];
+            if (color[neighbor] == GRAPES_NO_COLOR) {
+                color[neighbor] =
+                    (color[curr] == GRAPES_RED) ? GRAPES_BLUE : GRAPES_RED;
+                Deque_push_back(queue, neighbor);
+            }
+            else if (color[neighbor] == color[curr]) {
+                Deque_free(queue);
+                return GRAPES_FALSE;
+            }
+        }
+    }
+    Deque_free(queue);
+    return GRAPES_TRUE;
 }

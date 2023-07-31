@@ -77,3 +77,9 @@ class Graph:
 
         :rtype: list[int]
         """
+    def is_bipartite(self: Self) -> bool:
+        """Return whether the graph is bipartite or not.
+
+        :returns: Returns `True` if the graph is bipartite; otherwise, False.
+        :rtype: bool
+        """
