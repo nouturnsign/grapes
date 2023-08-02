@@ -1,9 +1,11 @@
-from typing import Callable
+from typing import Callable, Union
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
+
+import os
 
 class Graph:
     """Simple, undirected graph.
@@ -86,4 +88,18 @@ class Graph:
 
         :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
+        """
+    def save(
+        self: Self, fp: Union[str, os.PathLike], fmt: str, layout_style: str
+    ) -> None:
+        """Save the graph.
+
+        :param fp: File path to save to
+        :type fp: str or os.PathLike
+        :param fmt: File format
+        :type fmt: str
+        :param layout_style: Layout style
+        :type layout_style: str
+
+        :rtype: None
         """

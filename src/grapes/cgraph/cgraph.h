@@ -15,7 +15,7 @@ static void                Graph_dealloc(GraphObject *self);
 static PyObject *Graph_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static int       Graph_init(GraphObject *self, PyObject *args, PyObject *kwds);
 static PyMethodDef
-    Graph_methods[9];  // 1 more than listed below to include a sentinel value
+    Graph_methods[10];  // 1 more than listed below to include a sentinel value
 static PyObject *Graph_get_node_count(GraphObject *self,
                                       PyObject    *Py_UNUSED(ignored));
 static PyObject *Graph_get_edge_count(GraphObject *self,
@@ -32,6 +32,7 @@ static PyObject *Graph_get_component_sizes(GraphObject *self, PyObject *args,
                                            PyObject *kwds);
 static PyObject *Graph_is_bipartite(GraphObject *self, PyObject *args,
                                     PyObject *kwds);
+static PyObject *Graph_save(GraphObject *self, PyObject *args, PyObject *kwds);
 
 // internals
 #define GRAPES_FALSE 0

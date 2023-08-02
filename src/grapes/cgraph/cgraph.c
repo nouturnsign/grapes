@@ -5,6 +5,7 @@
 
 #include "deque.h"
 #include "heap.h"
+#include "vis.h"
 
 PyMODINIT_FUNC
 PyInit_cgraph(void)
@@ -171,6 +172,8 @@ static PyMethodDef Graph_methods[] = {
      METH_NOARGS, "Return the sizes of the components in the graph."},
     {"is_bipartite", (PyCFunction) Graph_is_bipartite, METH_NOARGS,
      "Return whether the graph is bipartite or not."},
+    {"save", (PyCFunction) Graph_save, METH_VARARGS | METH_KEYWORDS,
+     "Save the graph."},
     {NULL}};
 
 static PyObject *
@@ -510,6 +513,62 @@ Graph_is_bipartite(GraphObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_TRUE;
 }
 
+static PyObject *
+Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"fp", "fmt", "layout_style", NULL};
+    PyObject    *fp;
+    const char  *fmt;
+    const char  *layout_style;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&ss", kwlist,
+                                     PyUnicode_FSConverter, &fp, &fmt,
+                                     &layout_style)) {
+        return NULL;
+    }
+
+    char *filename = PyBytes_AsString(fp);
+    if (filename == NULL) {
+        return NULL;
+    }
+
+    // TODO: error checking
+    Point2d      *layout = Layout_alloc(self->node_count);
+    NodeOptions  *node_options = NodeOptions_alloc(self->node_count);
+    EdgeOptions **edge_options =
+        EdgeOptions_alloc(self->neighbor_count, self->node_count);
+
+    // TODO: allow following values to be configurable
+    const double   radius = 150;
+    const double   theta0 = 0;
+    const double   cx = 200;
+    const double   cy = 200;
+    const uint16_t width = 400;
+    const uint16_t height = 400;
+
+    if (strcmp(layout_style, "circular") == 0) {
+        layout_circular(layout, 0, self->node_count, radius, theta0, cx, cy);
+    }
+    else {
+        PyErr_Format(PyExc_NotImplementedError, "%s is not implemented.",
+                     layout_style);
+        return NULL;
+    }
+
+    if (strcmp(fmt, "svg") == 0) {
+        write_svg(self->adj_list, self->neighbor_count, self->node_count,
+                  filename, layout, width, height, node_options, edge_options);
+    }
+    else {
+        PyErr_Format(PyExc_NotImplementedError, "%s is not implemented.", fmt);
+        return NULL;
+    }
+
+    Vis_free(layout, node_options, edge_options, self->node_count);
+
+    Py_RETURN_NONE;
+}
+
 double
 get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
 {
@@ -544,6 +603,7 @@ get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
     return w;
 }
 
+// TODO: move graph traversals into separate files
 Py_ssize_t
 visit(GraphObject *graph, Py_ssize_t src, short *visited)
 {
