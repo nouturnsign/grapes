@@ -363,40 +363,51 @@ Graph_dijkstra_path(GraphObject *self, PyObject *args, PyObject *kwds)
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc prev at memory address %p",
                      (void *) prev);
+        free(dist);
         return NULL;
     }
 
     visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count, src,
                    weight, dist, prev);
+    if (PyErr_Occurred() != NULL) {
+        free(dist);
+        free(prev);
+        return NULL;
+    }
 
     PyObject *path = PyList_New(0);
     if (path == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize path");
     }
     if (prev[dst] == self->node_count) {
+        free(dist);
+        free(prev);
         return path;
     }
 
     if (PyList_Append(path, PyLong_FromSsize_t(dst)) == -1) {
+        free(dist);
+        free(prev);
         return NULL;
     }
     Py_ssize_t curr = dst;
     do {
         curr = prev[curr];
         if (PyList_Append(path, PyLong_FromSsize_t(curr)) == -1) {
+            free(dist);
+            free(prev);
             return NULL;
         }
     } while (curr != src);
 
     if (PyList_Reverse(path) == -1) {
+        free(dist);
+        free(prev);
         return NULL;
     }
 
     free(dist);
-    dist = NULL;
     free(prev);
-    prev = NULL;
-
     return path;
 }
 
@@ -415,6 +426,7 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc visited at memory address %p",
                      (void *) visited);
+        free(sizes);
         return NULL;
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
@@ -428,6 +440,11 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
             sizes[count++] =
                 visit(self->adj_list, self->neighbor_count, i, visited);
         }
+        if (PyErr_Occurred() != NULL) {
+            free(sizes);
+            free(visited);
+            return NULL;
+        }
     }
 
     PyObject *component_sizes = PyList_New(count);
@@ -439,14 +456,14 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
     for (Py_ssize_t i = 0; i < count; ++i) {
         if (PyList_SetItem(component_sizes, i, PyLong_FromSsize_t(sizes[i])) ==
             -1) {
+            free(sizes);
+            free(visited);
             return NULL;
         }
     }
 
     free(sizes);
-    sizes = NULL;
     free(visited);
-    visited = NULL;
     return component_sizes;
 }
 
@@ -466,9 +483,16 @@ Graph_is_bipartite(GraphObject *self, PyObject *args, PyObject *kwds)
 
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         if (!visit_color(self->adj_list, self->neighbor_count, i, color)) {
+            free(color);
             Py_RETURN_FALSE;
         }
+        if (PyErr_Occurred() != NULL) {
+            free(color);
+            return NULL;
+        }
     }
+
+    free(color);
     Py_RETURN_TRUE;
 }
 
@@ -491,11 +515,13 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    // TODO: error checking
     Point2d      *layout = Layout_alloc(self->node_count);
     NodeOptions  *node_options = NodeOptions_alloc(self->node_count);
     EdgeOptions **edge_options =
         EdgeOptions_alloc(self->neighbor_count, self->node_count);
+    if (PyErr_Occurred() != NULL) {
+        return NULL;
+    }
 
     // TODO: allow following values to be configurable
     const double   radius = 150;
@@ -511,6 +537,12 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
     else {
         PyErr_Format(PyExc_NotImplementedError, "%s is not implemented.",
                      layout_style);
+        Vis_free(layout, node_options, edge_options, self->node_count);
+        return NULL;
+    }
+
+    if (PyErr_Occurred() != NULL) {
+        Vis_free(layout, node_options, edge_options, self->node_count);
         return NULL;
     }
 
@@ -520,10 +552,15 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
     }
     else {
         PyErr_Format(PyExc_NotImplementedError, "%s is not implemented.", fmt);
+        Vis_free(layout, node_options, edge_options, self->node_count);
+        return NULL;
+    }
+
+    if (PyErr_Occurred() != NULL) {
+        Vis_free(layout, node_options, edge_options, self->node_count);
         return NULL;
     }
 
     Vis_free(layout, node_options, edge_options, self->node_count);
-
     Py_RETURN_NONE;
 }

@@ -37,7 +37,7 @@ Layout_alloc(Py_ssize_t node_count)
 {
     Point2d *layout = malloc(sizeof(*layout) * node_count);
     if (layout == NULL) {
-        fprintf(stderr, "Failed to allocate layout\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate layout");
         return NULL;
     }
     return layout;
@@ -48,7 +48,7 @@ NodeOptions_alloc(Py_ssize_t node_count)
 {
     NodeOptions *node_options = malloc(sizeof(*node_options) * node_count);
     if (node_options == NULL) {
-        fprintf(stderr, "Failed to allocate node_options\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate node_options");
         return NULL;
     }
 
@@ -68,13 +68,14 @@ EdgeOptions_alloc(Py_ssize_t *neighbor_count, Py_ssize_t node_count)
 {
     EdgeOptions **edge_options = malloc(sizeof(*edge_options) * node_count);
     if (edge_options == NULL) {
-        fprintf(stderr, "Failed to allocate edge_options\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate edge_options");
         return NULL;
     }
     for (Py_ssize_t i = 0; i < node_count; ++i) {
         edge_options[i] = malloc(sizeof(*edge_options[i]) * neighbor_count[i]);
         if (edge_options[i] == NULL) {
-            fprintf(stderr, "Failed to allocate edge_options[i]\n");
+            PyErr_Format(PyExc_MemoryError,
+                         "Failed to allocate edge_options[i]");
             return NULL;
         }
     }
@@ -125,7 +126,7 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
 {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
-        fprintf(stderr, "Failed to open %s", filename);
+        PyErr_Format(PyExc_IOError, "Failed to open %s", filename);
         return;
     }
 
@@ -173,8 +174,9 @@ write_svg_node(FILE *file, Point2d point, NodeOptions node_options)
                 (unsigned int) sqrt(node_options.shape_size / M_PI));
     }
     else {
-        fprintf(stderr, "Invalid shape argument to write_svg_node: %s",
-                node_options.shape);
+        PyErr_Format(PyExc_ValueError,
+                     "Invalid shape argument to write_svg_node: %s",
+                     node_options.shape);
         return;
     }
 

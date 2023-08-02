@@ -19,7 +19,7 @@ MinHeap_alloc(Py_ssize_t max_size)
 {
     MinHeap *heap = malloc(sizeof(*heap));
     if (heap == NULL) {
-        fprintf(stderr, "Failed to allocate heap\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate heap");
         return NULL;
     }
 
@@ -27,7 +27,7 @@ MinHeap_alloc(Py_ssize_t max_size)
     heap->max_size = max_size;
     heap->array = malloc(sizeof(*heap->array) * max_size);
     if (heap->array == NULL) {
-        fprintf(stderr, "Failed to allocate heap array\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate heap array");
         return NULL;
     }
 
@@ -52,7 +52,8 @@ void
 MinHeap_insert(MinHeap *heap, Py_ssize_t key, Py_ssize_t priority)
 {
     if (heap->size >= heap->max_size) {
-        fprintf(stderr, "Cannot insert key %ld. Heap is already full!\n", key);
+        PyErr_Format(PyExc_MemoryError,
+                     "Cannot insert key %ld. Heap is already full!", key);
         return;
     }
 

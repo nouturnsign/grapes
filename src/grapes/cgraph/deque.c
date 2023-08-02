@@ -19,7 +19,7 @@ Deque_alloc()
 {
     Deque *deque = malloc(sizeof(*deque));
     if (deque == NULL) {
-        fprintf(stderr, "Failed to allocate deque\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate deque");
         return NULL;
     }
 
@@ -47,7 +47,7 @@ Deque_push_front(Deque *deque, Py_ssize_t value)
 {
     DequeNode *curr = malloc(sizeof(*curr));
     if (curr == NULL) {
-        fprintf(stderr, "Failed to allocate curr node\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate curr node");
         return;
     }
 
@@ -81,7 +81,7 @@ Deque_push_back(Deque *deque, Py_ssize_t value)
 {
     DequeNode *curr = malloc(sizeof(*curr));
     if (curr == NULL) {
-        fprintf(stderr, "Failed to allocate curr node\n");
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate curr node");
         return;
     }
 
