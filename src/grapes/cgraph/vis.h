@@ -22,12 +22,11 @@ void layout_circular(Point2d *layout, Py_ssize_t begin, Py_ssize_t end,
                      double radius, double theta0, double cx, double cy);
 void write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                Py_ssize_t node_count, char *filename, Point2d *layout,
-               uint16_t viewbox_ul_x, uint16_t viewbox_ul_y,
-               uint16_t viewbox_dr_x, uint16_t viewbox_dr_y,
-               NodeOptions *node_options, EdgeOptions **edge_options);
-void write_svg_opening(FILE *file, uint16_t viewbox_ul_x,
-                       uint16_t viewbox_ul_y, uint16_t viewbox_dr_x,
-                       uint16_t viewbox_dr_y);
+               int viewbox_ul_x, int viewbox_ul_y, int viewbox_dr_x,
+               int viewbox_dr_y, NodeOptions *node_options,
+               EdgeOptions **edge_options);
+void write_svg_opening(FILE *file, int viewbox_ul_x, int viewbox_ul_y,
+                       int viewbox_dr_x, int viewbox_dr_y);
 void write_svg_closing(FILE *file);
 void write_svg_node(FILE *file, Point2d point, NodeOptions node_options);
 void write_svg_edge(FILE *file, Point2d point0, Point2d point1,

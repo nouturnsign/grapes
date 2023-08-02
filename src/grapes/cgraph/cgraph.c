@@ -499,19 +499,62 @@ Graph_is_bipartite(GraphObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"fp", "fmt", "layout_style", NULL};
+    static char *kwlist[] = {"fp", "fmt", "layout_style", "options", NULL};
     PyObject    *fp;
     const char  *fmt;
     const char  *layout_style;
+    PyObject    *options;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&ss", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&ssO", kwlist,
                                      PyUnicode_FSConverter, &fp, &fmt,
-                                     &layout_style)) {
+                                     &layout_style, &options)) {
         return NULL;
     }
 
     char *filename = PyBytes_AsString(fp);
     if (filename == NULL) {
+        return NULL;
+    }
+
+    int       viewbox_ul_x;
+    int       viewbox_ul_y;
+    int       viewbox_dr_x;
+    int       viewbox_dr_y;
+    PyObject *view_box_hint = PyDict_GetItemString(options, "viewBox_hint");
+    if (PyObject_RichCompareBool(view_box_hint,
+                                 PyUnicode_FromString("absolute"), Py_EQ)) {
+        PyObject *viewBox_ul_x = PyDict_GetItemString(options, "viewBox_ul_x");
+        if (viewBox_ul_x == NULL) {
+            viewbox_ul_x = 0;
+        }
+        else {
+            viewbox_ul_x = PyLong_AsUnsignedLong(viewBox_ul_x);
+        }
+        PyObject *viewBox_ul_y = PyDict_GetItemString(options, "viewBox_ul_y");
+        if (viewBox_ul_y == NULL) {
+            viewbox_ul_y = 0;
+        }
+        else {
+            viewbox_ul_y = PyLong_AsUnsignedLong(viewBox_ul_y);
+        }
+        PyObject *viewBox_dr_x = PyDict_GetItemString(options, "viewBox_dr_x");
+        if (viewBox_dr_x == NULL) {
+            viewbox_dr_x = 400;
+        }
+        else {
+            viewbox_dr_x = PyLong_AsUnsignedLong(viewBox_dr_x);
+        }
+        PyObject *viewBox_dr_y = PyDict_GetItemString(options, "viewBox_dr_y");
+        if (viewBox_dr_y == NULL) {
+            viewbox_dr_y = 400;
+        }
+        else {
+            viewbox_dr_y = PyLong_AsUnsignedLong(viewBox_dr_y);
+        }
+    }
+    else {
+        PyErr_Format(PyExc_NotImplementedError,
+                     "%s viewBox_hint not implemented");
         return NULL;
     }
 
@@ -523,17 +566,43 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    // TODO: allow following values to be configurable
-    const double   radius = 150;
-    const double   theta0 = 0;
-    const double   cx = 200;
-    const double   cy = 200;
-    const uint16_t viewbox_ul_x = 0;
-    const uint16_t viewbox_ul_y = 0;
-    const uint16_t viewbox_dr_x = 400;
-    const uint16_t viewbox_dr_y = 400;
-
     if (strcmp(layout_style, "circular") == 0) {
+        double    radius;
+        double    theta0;
+        double    cx;
+        double    cy;
+        PyObject *layout_circular_radius =
+            PyDict_GetItemString(options, "layout_circular_radius");
+        if (layout_circular_radius == NULL) {
+            radius = 150;
+        }
+        else {
+            radius = PyFloat_AsDouble(layout_circular_radius);
+        }
+        PyObject *layout_circular_theta0 =
+            PyDict_GetItemString(options, "layout_circular_theta0");
+        if (layout_circular_theta0 == NULL) {
+            theta0 = 0;
+        }
+        else {
+            theta0 = PyFloat_AsDouble(layout_circular_theta0);
+        }
+        PyObject *layout_circular_cx =
+            PyDict_GetItemString(options, "layout_circular_cx");
+        if (layout_circular_cx == NULL) {
+            cx = 200;
+        }
+        else {
+            cx = PyFloat_AsDouble(layout_circular_cx);
+        }
+        PyObject *layout_circular_cy =
+            PyDict_GetItemString(options, "layout_circular_cy");
+        if (layout_circular_cy == NULL) {
+            cy = 200;
+        }
+        else {
+            cy = PyFloat_AsDouble(layout_circular_cy);
+        }
         layout_circular(layout, 0, self->node_count, radius, theta0, cx, cy);
     }
     else {

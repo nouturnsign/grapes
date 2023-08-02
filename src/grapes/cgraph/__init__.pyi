@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Any, Callable, Optional, Union
 
 try:
     from typing import Self
@@ -90,7 +90,11 @@ class Graph:
         :rtype: bool
         """
     def save(
-        self: Self, fp: Union[str, os.PathLike], fmt: str, layout_style: str
+        self: Self,
+        fp: Union[str, os.PathLike],
+        fmt: str,
+        layout_style: str,
+        options: dict[str, Any],
     ) -> None:
         """Save the graph.
 
@@ -100,6 +104,8 @@ class Graph:
         :type fmt: str
         :param layout_style: Layout style
         :type layout_style: str
+        :param options: Configuration options
+        :type options: dict[str, Any]
 
         :rtype: None
         """

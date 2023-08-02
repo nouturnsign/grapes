@@ -121,8 +121,8 @@ layout_circular(Point2d *layout, Py_ssize_t begin, Py_ssize_t end,
 void
 write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
           Py_ssize_t node_count, char *filename, Point2d *layout,
-          uint16_t viewbox_ul_x, uint16_t viewbox_ul_y, uint16_t viewbox_dr_x,
-          uint16_t viewbox_dr_y, NodeOptions *node_options,
+          int viewbox_ul_x, int viewbox_ul_y, int viewbox_dr_x,
+          int viewbox_dr_y, NodeOptions *node_options,
           EdgeOptions **edge_options)
 {
     FILE *file = fopen(filename, "w");
@@ -152,14 +152,13 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
 }
 
 void
-write_svg_opening(FILE *file, uint16_t viewbox_ul_x, uint16_t viewbox_ul_y,
-                  uint16_t viewbox_dr_x, uint16_t viewbox_dr_y)
+write_svg_opening(FILE *file, int viewbox_ul_x, int viewbox_ul_y,
+                  int viewbox_dr_x, int viewbox_dr_y)
 {
     fprintf(file,
-            "<svg version=\"1.1\" viewBox=\"%u %u %u %u\" "
+            "<svg version=\"1.1\" viewBox=\"%d %d %d %d\" "
             "xmlns=\"http://www.w3.org/2000/svg\">",
-            (unsigned int) viewbox_ul_x, (unsigned int) viewbox_ul_y,
-            (unsigned int) viewbox_dr_x, (unsigned int) viewbox_dr_y);
+            viewbox_ul_x, viewbox_ul_y, viewbox_dr_x, viewbox_dr_y);
 }
 
 void
@@ -173,9 +172,8 @@ write_svg_node(FILE *file, Point2d point, NodeOptions node_options)
 {
     fprintf(file, "<");
     if (strcmp(node_options.shape, "circle") == 0) {
-        fprintf(file, "circle cx=\"%u\" cy=\"%u\" r=\"%u\" ",
-                (unsigned int) point.x, (unsigned int) point.y,
-                (unsigned int) sqrt(node_options.shape_size / M_PI));
+        fprintf(file, "circle cx=\"%d\" cy=\"%d\" r=\"%d\" ", (int) point.x,
+                (int) point.y, (int) sqrt(node_options.shape_size / M_PI));
     }
     else {
         PyErr_Format(PyExc_ValueError,
@@ -184,9 +182,9 @@ write_svg_node(FILE *file, Point2d point, NodeOptions node_options)
         return;
     }
 
-    fprintf(file, "stroke=\"%s\" fill=\"%s\" stroke-width=\"%u\" ",
+    fprintf(file, "stroke=\"%s\" fill=\"%s\" stroke-width=\"%d\" ",
             node_options.stroke, node_options.fill,
-            (unsigned int) node_options.stroke_width);
+            (int) node_options.stroke_width);
 
     fprintf(file, "/>");
 }
@@ -198,11 +196,10 @@ write_svg_edge(FILE *file, Point2d point0, Point2d point1,
     fprintf(file, "<");
 
     fprintf(file,
-            "line x1=\"%u\" x2=\"%u\" y1=\"%u\" y2=\"%u\" stroke=\"%s\" "
-            "stroke-width=\"%u\" ",
-            (unsigned int) point0.x, (unsigned int) point1.x,
-            (unsigned int) point0.y, (unsigned int) point1.y,
-            edge_options.stroke, (unsigned int) edge_options.stroke_width);
+            "line x1=\"%d\" x2=\"%d\" y1=\"%d\" y2=\"%d\" stroke=\"%s\" "
+            "stroke-width=\"%d\" ",
+            (int) point0.x, (int) point1.x, (int) point0.y, (int) point1.y,
+            edge_options.stroke, (int) edge_options.stroke_width);
 
     fprintf(file, "/>");
 }
