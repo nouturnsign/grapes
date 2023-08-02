@@ -101,8 +101,8 @@ static int
 Graph_init(GraphObject *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"node_count", NULL};
-    Py_ssize_t   node_count;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &node_count)) {
+    Py_ssize_t   node_count = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|n", kwlist, &node_count)) {
         return -1;
     }
 

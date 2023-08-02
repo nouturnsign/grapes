@@ -1,6 +1,8 @@
 import grapes
 
-g = grapes.Graph(8)
+g = grapes.Graph()
+for _ in range(8):
+    g.add_node()
 g.add_edge(0, 1)
 g.add_edge(0, 2)
 g.add_edge(0, 5)

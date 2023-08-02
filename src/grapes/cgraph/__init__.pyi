@@ -14,10 +14,10 @@ class Graph:
         Nodes are represented as 0-based indices.
     """
 
-    def __init__(self: Self, node_count: int) -> None:
+    def __init__(self: Self, node_count: int = 0) -> None:
         """Initialize a simple, undirected graph.
 
-        :param node_count: The initial number of nodes within the graph.
+        :param node_count: The initial number of nodes within the graph, defaults to 0.
         :type node_count: int
         """
     def get_node_count(self: Self) -> int:
