@@ -5,6 +5,8 @@
 
 #include "deque.h"
 #include "heap.h"
+#include "macros.h"
+#include "trav.h"
 #include "vis.h"
 
 PyMODINIT_FUNC
@@ -467,7 +469,8 @@ Graph_get_component_sizes(GraphObject *self, PyObject *args, PyObject *kwds)
     Py_ssize_t count = 0;
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         if (!visited[i]) {
-            sizes[count++] = visit(self, i, visited);
+            sizes[count++] =
+                visit(self->adj_list, self->neighbor_count, i, visited);
         }
     }
 
@@ -506,7 +509,7 @@ Graph_is_bipartite(GraphObject *self, PyObject *args, PyObject *kwds)
     }
 
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
-        if (!visit_color(self, i, color)) {
+        if (!visit_color(self->adj_list, self->neighbor_count, i, color)) {
             Py_RETURN_FALSE;
         }
     }
@@ -601,55 +604,4 @@ get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
     }
 
     return w;
-}
-
-// TODO: move graph traversals into separate files
-Py_ssize_t
-visit(GraphObject *graph, Py_ssize_t src, short *visited)
-{
-    visited[src] = GRAPES_TRUE;
-    Py_ssize_t size = 1;
-    Deque     *queue = Deque_alloc();  // push_back, pop_front
-    Deque_push_back(queue, src);
-    while (!Deque_is_empty(queue)) {
-        Py_ssize_t curr = Deque_pop_front(queue);
-        for (Py_ssize_t j = 0; j < graph->neighbor_count[curr]; ++j) {
-            Py_ssize_t neighbor = graph->adj_list[curr][j];
-            if (!visited[neighbor]) {
-                visited[neighbor] = GRAPES_TRUE;
-                ++size;
-                Deque_push_back(queue, neighbor);
-            }
-        }
-    }
-    Deque_free(queue);
-    return size;
-}
-
-short
-visit_color(GraphObject *graph, Py_ssize_t src, short *color)
-{
-    if (color[src] != GRAPES_NO_COLOR) {
-        return GRAPES_TRUE;
-    }
-    color[src] = GRAPES_RED;
-    Deque *queue = Deque_alloc();  // push_back, pop_front
-    Deque_push_back(queue, src);
-    while (!Deque_is_empty(queue)) {
-        Py_ssize_t curr = Deque_pop_front(queue);
-        for (Py_ssize_t j = 0; j < graph->neighbor_count[curr]; ++j) {
-            Py_ssize_t neighbor = graph->adj_list[curr][j];
-            if (color[neighbor] == GRAPES_NO_COLOR) {
-                color[neighbor] =
-                    (color[curr] == GRAPES_RED) ? GRAPES_BLUE : GRAPES_RED;
-                Deque_push_back(queue, neighbor);
-            }
-            else if (color[neighbor] == color[curr]) {
-                Deque_free(queue);
-                return GRAPES_FALSE;
-            }
-        }
-    }
-    Deque_free(queue);
-    return GRAPES_TRUE;
 }
