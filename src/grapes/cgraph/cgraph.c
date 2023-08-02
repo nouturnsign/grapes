@@ -358,14 +358,6 @@ Graph_dijkstra_path(GraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    short *visited = malloc(sizeof(*visited) * self->node_count);
-    if (visited == NULL) {
-        PyErr_Format(PyExc_MemoryError,
-                     "Unable to malloc visited at memory address %p",
-                     (void *) visited);
-        return NULL;
-    }
-
     Py_ssize_t *prev = malloc(sizeof(*prev) * self->node_count);
     if (prev == NULL) {
         PyErr_Format(PyExc_MemoryError,
@@ -374,40 +366,8 @@ Graph_dijkstra_path(GraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
-        dist[i] = PY_SSIZE_T_MAX;
-        visited[i] = GRAPES_FALSE;
-        prev[i] = self->node_count;
-    }
-    dist[src] = 0;
-    visited[src] = GRAPES_TRUE;
-    prev[src] = src;
-
-    MinHeap *heap =
-        MinHeap_alloc((self->node_count * (self->node_count - 1)) / 2);
-    MinHeap_insert(heap, src, 0);
-    Py_ssize_t u, v;
-    double     w;
-    while (!MinHeap_is_empty(heap)) {
-        u = MinHeap_extract_min(heap);
-        visited[u] = GRAPES_TRUE;
-        for (Py_ssize_t i = 0; i < self->neighbor_count[u]; ++i) {
-            v = self->adj_list[u][i];
-            if (visited[v]) {
-                continue;
-            }
-            w = get_weight(weight, u, v);
-            if (w == -1 && PyErr_Occurred() != NULL) {
-                return NULL;
-            }
-
-            if (dist[v] - dist[u] > w) {
-                dist[v] = dist[u] + w;
-                prev[v] = u;
-                MinHeap_insert(heap, v, dist[v]);
-            }
-        }
-    }
+    visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count, src,
+                   weight, dist, prev);
 
     PyObject *path = PyList_New(0);
     if (path == NULL) {
@@ -434,12 +394,8 @@ Graph_dijkstra_path(GraphObject *self, PyObject *args, PyObject *kwds)
 
     free(dist);
     dist = NULL;
-    free(visited);
-    visited = NULL;
     free(prev);
     prev = NULL;
-    MinHeap_free(heap);
-    heap = NULL;
 
     return path;
 }
@@ -570,38 +526,4 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
     Vis_free(layout, node_options, edge_options, self->node_count);
 
     Py_RETURN_NONE;
-}
-
-double
-get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
-{
-    const int failed = -1;
-    double    w;
-    PyObject *uvargs;
-    PyObject *ret_value;
-
-    uvargs = Py_BuildValue("(nn)", u, v);
-    if (uvargs == NULL) {
-        PyErr_Format(PyExc_TypeError,
-                     "Unable to format args given u=%ld and v=%ld", u, v);
-        return failed;
-    }
-    ret_value = PyObject_Call(weight, uvargs, NULL);
-    if (ret_value == NULL) {
-        PyErr_Format(PyExc_TypeError,
-                     "Unable to call weight function on args given "
-                     "weight=%R and uvargs=%R",
-                     weight, uvargs);
-        return failed;
-    }
-    w = PyFloat_AsDouble(ret_value);
-    if (w == -1 && PyErr_Occurred() != NULL) {
-        PyErr_Format(PyExc_ValueError,
-                     "weight function returned a non-float value "
-                     "given ret_value=%R",
-                     ret_value);
-        return failed;
-    }
-
-    return w;
 }
