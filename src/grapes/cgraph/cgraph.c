@@ -528,8 +528,10 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
     const double   theta0 = 0;
     const double   cx = 200;
     const double   cy = 200;
-    const uint16_t width = 400;
-    const uint16_t height = 400;
+    const uint16_t viewbox_ul_x = 0;
+    const uint16_t viewbox_ul_y = 0;
+    const uint16_t viewbox_dr_x = 400;
+    const uint16_t viewbox_dr_y = 400;
 
     if (strcmp(layout_style, "circular") == 0) {
         layout_circular(layout, 0, self->node_count, radius, theta0, cx, cy);
@@ -548,7 +550,8 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
 
     if (strcmp(fmt, "svg") == 0) {
         write_svg(self->adj_list, self->neighbor_count, self->node_count,
-                  filename, layout, width, height, node_options, edge_options);
+                  filename, layout, viewbox_ul_x, viewbox_ul_y, viewbox_dr_x,
+                  viewbox_dr_y, node_options, edge_options);
     }
     else {
         PyErr_Format(PyExc_NotImplementedError, "%s is not implemented.", fmt);

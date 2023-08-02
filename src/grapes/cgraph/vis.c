@@ -121,7 +121,8 @@ layout_circular(Point2d *layout, Py_ssize_t begin, Py_ssize_t end,
 void
 write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
           Py_ssize_t node_count, char *filename, Point2d *layout,
-          uint16_t width, uint16_t height, NodeOptions *node_options,
+          uint16_t viewbox_ul_x, uint16_t viewbox_ul_y, uint16_t viewbox_dr_x,
+          uint16_t viewbox_dr_y, NodeOptions *node_options,
           EdgeOptions **edge_options)
 {
     FILE *file = fopen(filename, "w");
@@ -130,7 +131,8 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         return;
     }
 
-    write_svg_opening(file, width, height);
+    write_svg_opening(file, viewbox_ul_x, viewbox_ul_y, viewbox_dr_x,
+                      viewbox_dr_y);
     for (Py_ssize_t i = 0; i < node_count; ++i) {
         write_svg_node(file, layout[i], node_options[i]);
     }
@@ -150,12 +152,14 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
 }
 
 void
-write_svg_opening(FILE *file, uint16_t width, uint16_t height)
+write_svg_opening(FILE *file, uint16_t viewbox_ul_x, uint16_t viewbox_ul_y,
+                  uint16_t viewbox_dr_x, uint16_t viewbox_dr_y)
 {
     fprintf(file,
-            "<svg version=\"1.1\" width=\"%ld\" height=\"%ld\" "
+            "<svg version=\"1.1\" viewBox=\"%u %u %u %u\" "
             "xmlns=\"http://www.w3.org/2000/svg\">",
-            width, height);
+            (unsigned int) viewbox_ul_x, (unsigned int) viewbox_ul_y,
+            (unsigned int) viewbox_dr_x, (unsigned int) viewbox_dr_y);
 }
 
 void
