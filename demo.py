@@ -53,5 +53,6 @@ options = {
     "layout_circular_theta0": 1.57079632679,
     "layout_circular_cx": 150,
     "layout_circular_cy": 150,
+    "node": {"fill": "white", "label": [chr(i + ord("A")) for i in range(8)]},
 }
 g.save("out.svg", "svg", "circular", options)

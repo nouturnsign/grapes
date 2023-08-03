@@ -566,6 +566,9 @@ Graph_save(GraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
+    Options_update(node_options, edge_options, self->neighbor_count,
+                   self->node_count, options);
+
     if (strcmp(layout_style, "circular") == 0) {
         double    radius;
         double    theta0;

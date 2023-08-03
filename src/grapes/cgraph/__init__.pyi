@@ -107,5 +107,8 @@ class Graph:
         :param options: Configuration options
         :type options: dict[str, Any]
 
+        .. note::
+            TODO: `options` is currently undocumented
+
         :rtype: None
         """

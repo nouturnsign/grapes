@@ -16,8 +16,11 @@ Point2d      *Layout_alloc(Py_ssize_t node_count);
 NodeOptions  *NodeOptions_alloc(Py_ssize_t node_count);
 EdgeOptions **EdgeOptions_alloc(Py_ssize_t *neighbor_count,
                                 Py_ssize_t  node_count);
-void          Vis_free(Point2d *layout, NodeOptions *node_options,
-                       EdgeOptions **edge_options, Py_ssize_t node_count);
+void Options_update(NodeOptions *node_options, EdgeOptions **edge_options,
+                    Py_ssize_t *neighbor_count, Py_ssize_t node_count,
+                    PyObject *options);
+void Vis_free(Point2d *layout, NodeOptions *node_options,
+              EdgeOptions **edge_options, Py_ssize_t node_count);
 void layout_circular(Point2d *layout, Py_ssize_t begin, Py_ssize_t end,
                      double radius, double theta0, double cx, double cy);
 void write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,

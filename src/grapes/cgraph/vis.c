@@ -18,18 +18,20 @@ typedef struct Point2d {
 
 typedef struct NodeOptions {
     // svg
-    char   *shape;
-    char   *stroke;
-    char   *fill;
-    uint8_t stroke_width;
+    char          *shape;
+    char          *stroke;
+    char          *fill;
+    unsigned short stroke_width;
+    char          *label;
     // custom
     double shape_size;
 } NodeOptions;
 
 typedef struct EdgeOptions {
     // svg
-    char   *stroke;
-    uint8_t stroke_width;
+    char          *stroke;
+    unsigned short stroke_width;
+    char          *label;
 } EdgeOptions;
 
 Point2d *
@@ -57,10 +59,105 @@ NodeOptions_alloc(Py_ssize_t node_count)
         node_options[i].stroke = "black";
         node_options[i].fill = "transparent";
         node_options[i].stroke_width = 2;
+        node_options[i].label = "";
         node_options[i].shape_size = 300;
     }
 
     return node_options;
+}
+
+void
+Options_update(NodeOptions *node_options, EdgeOptions **edge_options,
+               Py_ssize_t *neighbor_count, Py_ssize_t node_count,
+               PyObject *options)
+{
+    PyObject *node_dict = PyDict_GetItemString(options, "node");
+    if (node_dict != NULL) {
+        PyObject *shape = PyDict_GetItemString(node_dict, "shape");
+        if (shape != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(shape, (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(shape, i);
+                }
+                else {
+                    value = shape;
+                }
+                node_options[i].shape = PyUnicode_AsUTF8(value);
+            }
+        }
+        PyObject *stroke = PyDict_GetItemString(node_dict, "stroke");
+        if (stroke != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(stroke, (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(stroke, i);
+                }
+                else {
+                    value = stroke;
+                }
+                node_options[i].stroke = PyUnicode_AsUTF8(value);
+            }
+        }
+        PyObject *fill = PyDict_GetItemString(node_dict, "fill");
+        if (fill != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(fill, (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(fill, i);
+                }
+                else {
+                    value = fill;
+                }
+                node_options[i].fill = PyUnicode_AsUTF8(value);
+            }
+        }
+        PyObject *stroke_width =
+            PyDict_GetItemString(node_dict, "stroke_width");
+        if (stroke_width != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(stroke_width,
+                                        (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(stroke_width, i);
+                }
+                else {
+                    value = stroke_width;
+                }
+                node_options[i].stroke_width =
+                    (unsigned short) PyLong_AsUnsignedLong(value);
+            }
+        }
+        PyObject *label = PyDict_GetItemString(node_dict, "label");
+        if (label != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(label, (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(label, i);
+                }
+                else {
+                    value = label;
+                }
+                node_options[i].label = PyUnicode_AsUTF8(value);
+            }
+        }
+        PyObject *shape_size = PyDict_GetItemString(node_dict, "shape_size");
+        if (shape_size != NULL) {
+            for (Py_ssize_t i = 0; i < node_count; ++i) {
+                PyObject *value;
+                if (PyObject_IsInstance(shape_size,
+                                        (PyObject *) &PyList_Type)) {
+                    value = PyList_GetItem(shape_size, i);
+                }
+                else {
+                    value = shape_size;
+                }
+                node_options[i].shape_size = PyFloat_AsDouble(value);
+            }
+        }
+    }
+
+    // TODO: use edge_options
 }
 
 EdgeOptions **
@@ -84,6 +181,7 @@ EdgeOptions_alloc(Py_ssize_t *neighbor_count, Py_ssize_t node_count)
         for (Py_ssize_t j = 0; j < neighbor_count[i]; ++j) {
             edge_options[i][j].stroke = "black";
             edge_options[i][j].stroke_width = 2;
+            edge_options[i][j].label = "";
         }
     }
 
@@ -133,9 +231,6 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
 
     write_svg_opening(file, viewbox_ul_x, viewbox_ul_y, viewbox_dr_x,
                       viewbox_dr_y);
-    for (Py_ssize_t i = 0; i < node_count; ++i) {
-        write_svg_node(file, layout[i], node_options[i]);
-    }
     for (Py_ssize_t u = 0; u < node_count; ++u) {
         for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
             Py_ssize_t v = adj_list[u][j];
@@ -144,6 +239,9 @@ write_svg(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
             }
             write_svg_edge(file, layout[u], layout[v], edge_options[u][j]);
         }
+    }
+    for (Py_ssize_t i = 0; i < node_count; ++i) {
+        write_svg_node(file, layout[i], node_options[i]);
     }
     write_svg_closing(file);
 
@@ -170,10 +268,13 @@ write_svg_closing(FILE *file)
 void
 write_svg_node(FILE *file, Point2d point, NodeOptions node_options)
 {
+    int cx, cy;
     fprintf(file, "<");
     if (strcmp(node_options.shape, "circle") == 0) {
-        fprintf(file, "circle cx=\"%d\" cy=\"%d\" r=\"%d\" ", (int) point.x,
-                (int) point.y, (int) sqrt(node_options.shape_size / M_PI));
+        cx = (int) point.x;
+        cy = (int) point.y;
+        fprintf(file, "circle cx=\"%d\" cy=\"%d\" r=\"%d\" ", cx, cy,
+                (int) sqrt(node_options.shape_size / M_PI));
     }
     else {
         PyErr_Format(PyExc_ValueError,
@@ -182,11 +283,17 @@ write_svg_node(FILE *file, Point2d point, NodeOptions node_options)
         return;
     }
 
-    fprintf(file, "stroke=\"%s\" fill=\"%s\" stroke-width=\"%d\" ",
-            node_options.stroke, node_options.fill,
-            (int) node_options.stroke_width);
+    fprintf(file, "stroke=\"%s\" fill=\"%s\" stroke-width=\"%hu\" ",
+            node_options.stroke, node_options.fill, node_options.stroke_width);
 
     fprintf(file, "/>");
+
+    if (strcmp(node_options.label, "") != 0) {
+        fprintf(file,
+                "<text x=\"%d\" y=\"%d\" dominant-baseline=\"central\" "
+                "text-anchor=\"middle\" >%s</text>",
+                cx, cy, node_options.label);
+    }
 }
 
 void
@@ -197,9 +304,11 @@ write_svg_edge(FILE *file, Point2d point0, Point2d point1,
 
     fprintf(file,
             "line x1=\"%d\" x2=\"%d\" y1=\"%d\" y2=\"%d\" stroke=\"%s\" "
-            "stroke-width=\"%d\" ",
+            "stroke-width=\"%hu\" ",
             (int) point0.x, (int) point1.x, (int) point0.y, (int) point1.y,
-            edge_options.stroke, (int) edge_options.stroke_width);
+            edge_options.stroke, edge_options.stroke_width);
 
     fprintf(file, "/>");
+
+    // TODO: use edge_options
 }
