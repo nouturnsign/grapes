@@ -61,6 +61,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
 
     MinHeap *heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
     if (PyErr_Occurred() != NULL) {
+        free(visited);
         return;
     }
     MinHeap_insert(heap, src, 0);

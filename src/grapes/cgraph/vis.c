@@ -173,6 +173,7 @@ EdgeOptions_alloc(Py_ssize_t *neighbor_count, Py_ssize_t node_count)
         if (edge_options[i] == NULL) {
             PyErr_Format(PyExc_MemoryError,
                          "Failed to allocate edge_options[i]");
+            free(edge_options);
             return NULL;
         }
     }
