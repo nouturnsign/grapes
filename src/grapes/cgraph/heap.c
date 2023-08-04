@@ -28,6 +28,7 @@ MinHeap_alloc(Py_ssize_t max_size)
     heap->array = malloc(sizeof(*heap->array) * max_size);
     if (heap->array == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate heap array");
+        free(heap);
         return NULL;
     }
 
