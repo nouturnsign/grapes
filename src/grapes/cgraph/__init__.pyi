@@ -89,26 +89,3 @@ class Graph:
         :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
         """
-    def save(
-        self: Self,
-        fp: Union[str, os.PathLike],
-        fmt: str,
-        layout_style: str,
-        options: dict[str, Any],
-    ) -> None:
-        """Save the graph.
-
-        :param fp: File path to save to
-        :type fp: str or os.PathLike
-        :param fmt: File format
-        :type fmt: str
-        :param layout_style: Layout style
-        :type layout_style: str
-        :param options: Configuration options
-        :type options: dict[str, Any]
-
-        .. note::
-            TODO: `options` is currently undocumented
-
-        :rtype: None
-        """

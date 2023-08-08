@@ -7,7 +7,6 @@ grapes_ext = Extension(
         "src/grapes/cgraph/deque.c",
         "src/grapes/cgraph/heap.c",
         "src/grapes/cgraph/trav.c",
-        "src/grapes/cgraph/vis.c",
     ],
     include_dirs=["src/grapes/cgraph"],
 )
