@@ -1,11 +1,9 @@
-from typing import Any, Callable, Optional, Union
+from typing import Callable
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
-
-import os
 
 class Graph:
     """Simple, undirected graph.
