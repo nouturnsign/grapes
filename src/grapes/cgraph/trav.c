@@ -17,7 +17,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
     }
 
     for (Py_ssize_t i = 0; i < node_count; ++i) {
-        dist[i] = PY_SSIZE_T_MAX;
+        dist[i] = INFINITY;
         visited[i] = GRAPES_FALSE;
         prev[i] = node_count;
     }
@@ -47,7 +47,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
             }
             w = weight[u][j];
 
-            if (dist[v] - dist[u] > w) {
+            if (dist[v] > dist[u] + w) {
                 dist[v] = dist[u] + w;
                 prev[v] = u;
                 MinHeap_insert(heap, v, dist[v]);
