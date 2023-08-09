@@ -6,7 +6,7 @@
 
 void       visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                           Py_ssize_t node_count, Py_ssize_t src, double **weight,
-                          Py_ssize_t *dist, Py_ssize_t *prev);
+                          double *dist, Py_ssize_t *prev);
 Py_ssize_t visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                  Py_ssize_t src, short *visited);
 short      visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
