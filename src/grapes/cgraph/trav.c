@@ -5,44 +5,10 @@
 #include "heap.h"
 #include "macros.h"
 
-double
-get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v)
-{
-    const int failed = -1;
-    double    w;
-    PyObject *uvargs;
-    PyObject *ret_value;
-
-    uvargs = Py_BuildValue("(nn)", u, v);
-    if (uvargs == NULL) {
-        PyErr_Format(PyExc_TypeError,
-                     "Unable to format args given u=%ld and v=%ld", u, v);
-        return failed;
-    }
-    ret_value = PyObject_Call(weight, uvargs, NULL);
-    if (ret_value == NULL) {
-        PyErr_Format(PyExc_TypeError,
-                     "Unable to call weight function on args given "
-                     "weight=%R and uvargs=%R",
-                     weight, uvargs);
-        return failed;
-    }
-    w = PyFloat_AsDouble(ret_value);
-    if (w == -1 && PyErr_Occurred() != NULL) {
-        PyErr_Format(PyExc_ValueError,
-                     "weight function returned a non-float value "
-                     "given ret_value=%R",
-                     ret_value);
-        return failed;
-    }
-
-    return w;
-}
-
 void
 visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-               Py_ssize_t node_count, Py_ssize_t src, PyObject *weight,
-               Py_ssize_t *dist, Py_ssize_t *prev)
+               Py_ssize_t node_count, Py_ssize_t src, double **weight,
+               double *dist, Py_ssize_t *prev)
 {
     short *visited = malloc(sizeof(*visited) * node_count);
     if (visited == NULL) {
@@ -74,17 +40,12 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
     while (!MinHeap_is_empty(heap)) {
         u = MinHeap_extract_min(heap);
         visited[u] = GRAPES_TRUE;
-        for (Py_ssize_t i = 0; i < neighbor_count[u]; ++i) {
-            v = adj_list[u][i];
+        for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
+            v = adj_list[u][j];
             if (visited[v]) {
                 continue;
             }
-            w = get_weight(weight, u, v);
-            if (w == -1 && PyErr_Occurred() != NULL) {
-                free(visited);
-                MinHeap_free(heap);
-                return;
-            }
+            w = weight[u][j];
 
             if (dist[v] - dist[u] > w) {
                 dist[v] = dist[u] + w;

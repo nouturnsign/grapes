@@ -9,31 +9,35 @@ PyMODINIT_FUNC            PyInit_cgraph(void);
 static struct PyModuleDef cgraphmodule;
 
 // classes
-typedef struct GraphObject GraphObject;
-static PyTypeObject        GraphType;
-static void                Graph_dealloc(GraphObject *self);
-static PyObject *Graph_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-static int       Graph_init(GraphObject *self, PyObject *args, PyObject *kwds);
-static PyMethodDef
-    Graph_methods[9];  // 1 more than listed below to include a sentinel value
-static PyObject *Graph_get_node_count(GraphObject *self,
-                                      PyObject    *Py_UNUSED(ignored));
-static PyObject *Graph_get_edge_count(GraphObject *self,
-                                      PyObject    *Py_UNUSED(ignored));
-static PyObject *Graph_get_edges(GraphObject *self,
-                                 PyObject    *Py_UNUSED(ignored));
-static PyObject *Graph_add_node(GraphObject *self,
-                                PyObject    *Py_UNUSED(ignored));
-static PyObject *Graph_add_edge(GraphObject *self, PyObject *args,
-                                PyObject *kwds);
-static PyObject *Graph_dijkstra_path(GraphObject *self, PyObject *args,
+typedef struct MultigraphObject MultigraphObject;
+static PyTypeObject             MultigraphType;
+static void                     Multigraph_dealloc(MultigraphObject *self);
+static PyObject   *Multigraph_new(PyTypeObject *type, PyObject *args,
+                                  PyObject *kwds);
+static int         Multigraph_init(MultigraphObject *self, PyObject *args,
+                                   PyObject *kwds);
+static PyMethodDef Multigraph_methods[9];  // 1 more than listed below to
+                                           // include a sentinel value
+static PyObject *Multigraph_get_node_count(MultigraphObject *self,
+                                           PyObject *Py_UNUSED(ignored));
+static PyObject *Multigraph_get_edge_count(MultigraphObject *self,
+                                           PyObject *Py_UNUSED(ignored));
+static PyObject *Multigraph_get_edges(MultigraphObject *self,
+                                      PyObject         *Py_UNUSED(ignored));
+static PyObject *Multigraph_add_node(MultigraphObject *self,
+                                     PyObject         *Py_UNUSED(ignored));
+static PyObject *Multigraph_add_edge(MultigraphObject *self, PyObject *args,
                                      PyObject *kwds);
-static PyObject *Graph_get_component_sizes(GraphObject *self, PyObject *args,
-                                           PyObject *kwds);
-static PyObject *Graph_is_bipartite(GraphObject *self, PyObject *args,
-                                    PyObject *kwds);
+static PyObject *Multigraph_dijkstra_path(MultigraphObject *self,
+                                          PyObject *args, PyObject *kwds);
+static PyObject *Multigraph_get_component_sizes(MultigraphObject *self,
+                                                PyObject         *args,
+                                                PyObject         *kwds);
+static PyObject *Multigraph_is_bipartite(MultigraphObject *self,
+                                         PyObject *args, PyObject *kwds);
 
 // internals
-double get_weight(PyObject *weight, Py_ssize_t u, Py_ssize_t v);
+int add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
+                            double weight);
 
 #endif  // GRAPES_GRAPES_CGRAPH_CGRAPH_H_

@@ -1,22 +1,26 @@
-from typing import Callable
+from typing import Type
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class Graph:
-    """Simple, undirected graph.
+class Multigraph:
+    """Underlying graph type.
 
     .. note::
         Nodes are represented as 0-based indices.
     """
 
-    def __init__(self: Self, node_count: int = 0) -> None:
-        """Initialize a simple, undirected graph.
+    def __init__(self: Self, is_directed: bool, node_count: int = 0) -> None:
+        """Initialize a graph.
 
-        :param node_count: The initial number of nodes within the graph, defaults to 0.
+        :param is_directed: Whether or not the graph is directed.
+        :type is_directed: bool
+        :param node_count: The initial number of nodes within the graph,
+            defaults to 0.
         :type node_count: int
+        :rtype: None
         """
     def get_node_count(self: Self) -> int:
         """Get the number of nodes in the graph.
@@ -26,14 +30,19 @@ class Graph:
     def get_edge_count(self: Self) -> int:
         """Get the number of edges in the graph.
 
+        .. note::
+            Edges are considered as having their own identity, so multiple
+            edges with the same nodes will be counted separately.
+
         :rtype: int
         """
     def get_edges(self: Self) -> list[tuple[int, int]]:
         """Get the edges in the graph.
 
-        .. warning::
-            If (u, v) is in edges, (v, u) will not also be returned. However,
-            duplicate inserted edges will still be duplicated.
+        .. note::
+            If the graph is undirected and (u, v) is in edges, (v, u) will not
+            also be returned. However, edges are considered as having their own
+            identity, so multiple edges will be returned.
 
         :returns: List of edges
         :rtype: list[tuple[int, int]]
@@ -44,34 +53,27 @@ class Graph:
         :returns: The index to the new node added.
         :rtype: int
         """
-    def add_edge(self: Self, u: int, v: int) -> None:
-        """Add an undirected edge between two nodes.
+    def add_edge(self: Self, u: int, v: int, *, weight: float = 1.0) -> None:
+        """Add an edge between two nodes.
 
-        .. warning::
-            Adding duplicate edges will not raise an error.
+        .. note::
+            Edges are considered as having their own identity.
 
         :param u: node
         :type u: int
         :param v: node
         :type v: int
+        :param weight: weight of edge, defaults to 1.0
+        :type weight: float
         :rtype: None
         """
-    def dijkstra_path(
-        self: Self, src: int, dst: int, weight: Callable[[int, int], float]
-    ) -> list[int]:
+    def dijkstra_path(self: Self, src: int, dst: int) -> list[int]:
         """Get the shortest path in the graph using Dijkstra's algorithm.
-
-        .. note::
-            The weight function should accept both (u, v) and (v, u) as
-            potential inputs.
 
         :param src: Begin (source) node
         :type src: int
         :param dst: End (destination) node
         :type dst: int
-        :param weight: Weight function that accepts two nodes and returns the
-            weight as a float.
-        :type weight: Callable[[int, int], float]
         :return: List of nodes, starting from `src` and ending with `dst`.
             Returns an empty list if no path found.
         :rtype: list[int]
