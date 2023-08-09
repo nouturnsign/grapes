@@ -5,6 +5,4 @@ Python graph library written in C
 Documentation found here: https://nouturnsign.github.io/grapes-doc/
 
 ## TODO
-*   ensure all values are freed even if exception occurs
-*   prevent XSS with svg
 *   more algos!
