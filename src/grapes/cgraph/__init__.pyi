@@ -18,7 +18,6 @@ class Multigraph:
         :param node_count: The initial number of nodes within the graph,
             defaults to 0.
         :type node_count: int
-        :rtype: None
         """
     def get_node_count(self: Self) -> int:
         """Get the number of nodes in the graph.
@@ -63,7 +62,6 @@ class Multigraph:
         :type v: int
         :param weight: weight of edge, defaults to 1.0
         :type weight: float
-        :rtype: None
         """
     def dijkstra_path(self: Self, src: int, dst: int) -> list[int]:
         """Get the shortest path in the graph using Dijkstra's algorithm.
