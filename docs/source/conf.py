@@ -33,14 +33,16 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 
-def skip_cgraph(app, what, name, obj, skip, options):
-    if what == "package" and "cgraph" in name:
+def skip_cgraph_and_lgraph(app, what, name, obj, skip, options):
+    if (what == "package" and "cgraph" in name) or (
+        what == "module" and "lgraph" in name
+    ):
         skip = True
     return skip
 
 
 def setup(sphinx):
-    sphinx.connect("autoapi-skip-member", skip_cgraph)
+    sphinx.connect("autoapi-skip-member", skip_cgraph_and_lgraph)
 
 
 # -- Options for HTML output -------------------------------------------------
