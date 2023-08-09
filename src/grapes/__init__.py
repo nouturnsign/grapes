@@ -1,4 +1,4 @@
-__all__ = ["Multigraph", "LabeledGraph"]
+__all__ = ["Multigraph", "LabeledGraph", "ShortestPathAlgorithm"]
 
-from .cgraph import *
-from .lgraph import *
+from .cgraph import Multigraph
+from .lgraph import LabeledGraph, ShortestPathAlgorithm
