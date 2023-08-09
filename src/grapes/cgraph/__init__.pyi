@@ -1,5 +1,3 @@
-from typing import Type
-
 try:
     from typing import Self
 except ImportError:
