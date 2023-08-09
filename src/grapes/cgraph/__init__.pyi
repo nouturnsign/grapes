@@ -6,19 +6,17 @@ except ImportError:
 class Multigraph:
     """Underlying graph type.
 
+    :param is_directed: Whether or not the graph is directed.
+    :type is_directed: bool
+    :param node_count: The initial number of nodes within the graph,
+        defaults to 0.
+    :type node_count: int
+
     .. note::
         Nodes are represented as 0-based indices.
     """
 
-    def __init__(self: Self, is_directed: bool, node_count: int = 0) -> None:
-        """Initialize a graph.
-
-        :param is_directed: Whether or not the graph is directed.
-        :type is_directed: bool
-        :param node_count: The initial number of nodes within the graph,
-            defaults to 0.
-        :type node_count: int
-        """
+    def __init__(self: Self, is_directed: bool, node_count: int = 0) -> None: ...
     def get_node_count(self: Self) -> int:
         """Get the number of nodes in the graph.
 
