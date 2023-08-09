@@ -1,3 +1,3 @@
-__all__ = ["Graph"]
+__all__ = ["Multigraph"]
 
 from .cgraph import *
