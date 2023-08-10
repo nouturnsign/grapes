@@ -1,4 +1,4 @@
-from typing import Generic, Hashable, Optional, TypeVar
+from typing import Generic, Hashable, Optional, TypeVar, Union
 
 try:
     from typing import Self

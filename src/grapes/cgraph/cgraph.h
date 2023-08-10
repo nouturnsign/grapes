@@ -16,8 +16,8 @@ static PyObject   *Multigraph_new(PyTypeObject *type, PyObject *args,
                                   PyObject *kwds);
 static int         Multigraph_init(MultigraphObject *self, PyObject *args,
                                    PyObject *kwds);
-static PyMethodDef Multigraph_methods[9];  // 1 more than listed below to
-                                           // include a sentinel value
+static PyMethodDef Multigraph_methods[10];  // 1 more than listed below to
+                                            // include a sentinel value
 static PyObject *Multigraph_get_node_count(MultigraphObject *self,
                                            PyObject *Py_UNUSED(ignored));
 static PyObject *Multigraph_get_edge_count(MultigraphObject *self,
@@ -35,6 +35,9 @@ static PyObject *Multigraph_get_component_sizes(MultigraphObject *self,
                                                 PyObject         *kwds);
 static PyObject *Multigraph_is_bipartite(MultigraphObject *self,
                                          PyObject *args, PyObject *kwds);
+static PyObject *Multigraph_compute_circular_layout(MultigraphObject *self,
+                                                    PyObject         *args,
+                                                    PyObject         *kwds);
 
 // internals
 int add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,

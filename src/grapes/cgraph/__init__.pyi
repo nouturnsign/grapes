@@ -83,3 +83,23 @@ class Multigraph:
         :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
         """
+    def compute_circular_layout(
+        self: Self,
+        radius: float,
+        initial_angle: float,
+        x_center: float,
+        y_center: float,
+    ) -> list[tuple[float, float]]:
+        """Compute a circular layout for the graph.
+
+        :param radius: Radius of circle
+        :type radius: float
+        :param initial_angle: Initial angle in radians
+        :type initial_angle: float
+        :param x_center: x-coordinate of center of circle
+        :type x_center: float
+        :param y_center: y-coordinate of center of circle
+        :type y_center: float
+        :returns: List of 2d coordinates
+        :rtype: list[tuple[float, float]]
+        """

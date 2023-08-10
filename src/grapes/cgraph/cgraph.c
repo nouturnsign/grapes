@@ -200,6 +200,9 @@ static PyMethodDef Multigraph_methods[] = {
      METH_NOARGS, "Return the sizes of the components in the graph."},
     {"is_bipartite", (PyCFunction) Multigraph_is_bipartite, METH_NOARGS,
      "Return whether the graph is bipartite or not."},
+    {"compute_circular_layout",
+     (PyCFunction) Multigraph_compute_circular_layout,
+     METH_VARARGS | METH_KEYWORDS, "Compute a circular layout for the graph."},
     {NULL}};
 
 static PyObject *
@@ -536,4 +539,53 @@ Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
 
     free(color);
     Py_RETURN_TRUE;
+}
+
+static PyObject *
+Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
+                                   PyObject *kwds)
+{
+    static char *kwlist[] = {"radius", "initial_angle", "x_center", "y_center",
+                             NULL};
+    double       radius;
+    double       initial_angle;
+    double       x_center;
+    double       y_center;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "dddd", kwlist, &radius,
+                                     &initial_angle, &x_center, &y_center)) {
+        return NULL;
+    }
+
+    double(*raw_layout)[2] = malloc(sizeof(*raw_layout) * self->node_count);
+    if (raw_layout == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc raw_layout at memory address %p",
+                     (void *) raw_layout);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        double theta =
+            ((double) i / self->node_count) * 2 * M_PI + initial_angle;
+        raw_layout[i][0] = radius * cos(theta) + x_center;
+        raw_layout[i][1] = radius * sin(theta) + y_center;
+    }
+
+    PyObject *layout = PyList_New(self->node_count);
+    if (layout == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize layout");
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyObject *coords =
+            Py_BuildValue("(dd)", raw_layout[i][0], raw_layout[i][1]);
+        if (coords == NULL) {
+            PyErr_Format(PyExc_TypeError,
+                         "Unable to format uv given x=%f and y=%f",
+                         raw_layout[i][0], raw_layout[i][1]);
+            return NULL;
+        }
+        if (PyList_SetItem(layout, i, coords) == -1) {
+            return NULL;
+        }
+    }
+    return layout;
 }
