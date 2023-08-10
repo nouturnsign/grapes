@@ -54,6 +54,9 @@ class InvertibleMapping(Generic[K1, K2]):
         self._original_mapping[key] = value
         self._inverse_mapping[value] = key
 
+    def __contains__(self: Self, key: Union[K1, K2]) -> bool:
+        return (key in self._original_mapping) or (key in self._inverse_mapping)
+
 
 class GraphMissingNodeError(Exception):
     """Raised when a graph is missing the requested node.
