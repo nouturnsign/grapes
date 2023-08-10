@@ -55,6 +55,28 @@ class InvertibleMapping(Generic[K1, K2]):
         self._inverse_mapping[value] = key
 
 
+class GraphMissingNodeError(Exception):
+    """Raised when a graph is missing the requested node.
+
+    :param label: Missing node.
+    :type label: Hashable
+    """
+
+    def __init__(self, label: Hashable) -> None:
+        super().__init__(f"Graph is missing the following node: {label=}")
+
+
+class GraphDuplicateNodeError(Exception):
+    """Raised when a graph has a duplicate node.
+
+    :param label: Duplicate node.
+    :type label: Hashable
+    """
+
+    def __init__(self, label: Hashable) -> None:
+        super().__init__(f"Graph has a duplicate of the following node: {label=}")
+
+
 class SimpleGraphWithLoopError(Exception):
     """Raised when a simple graph contains a self loop.
 
@@ -145,7 +167,10 @@ class LabeledGraph:
 
         :param label: Node
         :type label: Hashable
+        :raises GraphDuplicateNodeError: Graph already contains the given node.
         """
+        if label in self.label_data:
+            raise GraphDuplicateNodeError(label)
         self.label_data[label] = self.underlying_graph.add_node()
 
     def add_edge(
@@ -163,11 +188,16 @@ class LabeledGraph:
         :type v_label: Hashable
         :param weight: weight of edges, defaults to 1.0
         :type weight: float
+        :raises GraphMissingNodeError: Graph is missing one of the nodes.
         :raises SimpleGraphWithLoopError: Graph is a simple graph and attempted
             to add a self loop.
         :raises SimpleGraphWithDuplicateEdgeError: Graph is a simple graph and
             attempted to add a duplicate edge.
         """
+        if u_label not in self.label_data:
+            raise GraphMissingNodeError(u_label)
+        if v_label not in self.label_data:
+            raise GraphMissingNodeError(v_label)
         if self.is_simple:
             if u_label == v_label:
                 raise SimpleGraphWithLoopError(u_label)
@@ -197,11 +227,16 @@ class LabeledGraph:
         :param algorithm: Algorithm to use, defaults to
             `ShortestPathAlgorithm.AUTO`
         :type algorithm: :class:`grapes.ShortestPathAlgorithm`
+        :raises GraphMissingNodeError: Graph is missing one of the nodes.
         :raises NotImplementedError: The given algorithm is not implemented.
         :return: List of nodes, starting from `src_label` and ending with
             `dst_label`. Returns an empty list if no path found.
         :rtype: list[Hashable]
         """
+        if src_label not in self.label_data:
+            raise GraphMissingNodeError(src_label)
+        if dst_label not in self.label_data:
+            raise GraphMissingNodeError(dst_label)
         src = self.label_data[src_label]
         dst = self.label_data[dst_label]
 
