@@ -562,7 +562,8 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
         return NULL;
     }
 
-    double *raw_layout = malloc(sizeof(*raw_layout) * self->node_count * 2);
+    npy_float32 *raw_layout =
+        malloc(sizeof(*raw_layout) * self->node_count * 2);
     if (raw_layout == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc raw_layout at memory address %p",
