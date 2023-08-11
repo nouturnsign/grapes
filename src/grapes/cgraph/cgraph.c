@@ -419,7 +419,7 @@ Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
 
     visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count, src,
                    self->weight, dist, prev);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         free(dist);
         free(prev);
         return NULL;
@@ -491,7 +491,7 @@ Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
             sizes[count++] =
                 visit(self->adj_list, self->neighbor_count, i, visited);
         }
-        if (PyErr_Occurred() != NULL) {
+        if (PyErr_Occurred()) {
             free(sizes);
             free(visited);
             return NULL;
@@ -537,7 +537,7 @@ Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
             free(color);
             Py_RETURN_FALSE;
         }
-        if (PyErr_Occurred() != NULL) {
+        if (PyErr_Occurred()) {
             free(color);
             return NULL;
         }
@@ -579,5 +579,8 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     const npy_intp dims[2] = {self->node_count, 2};
     PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_DOUBLE,
                                                       (void *) raw_layout);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
     return layout;
 }

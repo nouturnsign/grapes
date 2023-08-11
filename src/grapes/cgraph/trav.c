@@ -26,12 +26,12 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
     prev[src] = src;
 
     MinHeap *heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         free(visited);
         return;
     }
     MinHeap_insert(heap, src, 0);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         free(visited);
         return;
     }
@@ -51,7 +51,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                 dist[v] = dist[u] + w;
                 prev[v] = u;
                 MinHeap_insert(heap, v, dist[v]);
-                if (PyErr_Occurred() != NULL) {
+                if (PyErr_Occurred()) {
                     free(visited);
                     MinHeap_free(heap);
                     return;
@@ -71,11 +71,11 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     visited[src] = GRAPES_TRUE;
     Py_ssize_t size = 1;
     Deque     *queue = Deque_alloc();  // push_back, pop_front
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     Deque_push_back(queue, src);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     while (!Deque_is_empty(queue)) {
@@ -86,7 +86,7 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
                 visited[neighbor] = GRAPES_TRUE;
                 ++size;
                 Deque_push_back(queue, neighbor);
-                if (PyErr_Occurred() != NULL) {
+                if (PyErr_Occurred()) {
                     return -1;
                 }
             }
@@ -105,11 +105,11 @@ visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     }
     color[src] = GRAPES_RED;
     Deque *queue = Deque_alloc();  // push_back, pop_front
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     Deque_push_back(queue, src);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     while (!Deque_is_empty(queue)) {
@@ -120,7 +120,7 @@ visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
                 color[neighbor] =
                     (color[curr] == GRAPES_RED) ? GRAPES_BLUE : GRAPES_RED;
                 Deque_push_back(queue, neighbor);
-                if (PyErr_Occurred() != NULL) {
+                if (PyErr_Occurred()) {
                     Deque_free(queue);
                     return -1;
                 }
