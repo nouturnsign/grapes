@@ -84,15 +84,17 @@ class LabeledGraph:
         return list(self.label_data._original_mapping.keys())
 
     @property
-    def edges(self: Self) -> list[tuple[Hashable, Hashable]]:
-        """The edges in the graph.
+    def edges(self: Self) -> dict[tuple[Hashable, Hashable], float]:
+        """The edges in the graph with their corresponding weight.
 
-        :type: list[tuple[Hashable, Hashable]]
+        :type: dict[tuple[Hashable, Hashable], float]
         """
-        return [
-            (self.label_data.inverse[u], self.label_data.inverse[v])
-            for u, v in self.underlying_graph.get_edges()
-        ]
+        return {
+            (self.label_data.inverse[u], self.label_data.inverse[v]): w
+            for (u, v), w in zip(
+                self.underlying_graph.get_edges(), self.underlying_graph.get_weights()
+            )
+        }
 
     def add_node(self: Self, label: Hashable) -> None:
         """Add a node to the graph.
@@ -256,11 +258,16 @@ class LabeledGraph:
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,
             tempfile.NamedTemporaryFile("w+b", delete=False) as edge_data,
+            tempfile.NamedTemporaryFile("w+b", delete=False) as weight_data,
             tempfile.NamedTemporaryFile("w+", delete=False) as config,
         ):
             np.save(node_layout, layout)
             np.save(
                 edge_data, np.array(self.underlying_graph.get_edges(), dtype=np.uint32)
+            )
+            np.save(
+                weight_data,
+                np.array(self.underlying_graph.get_weights(), dtype=np.float32),
             )
             json.dump(raw_config, config)
         mglw.run_window_config(
@@ -270,6 +277,8 @@ class LabeledGraph:
                 node_layout.name,
                 "--edge-data",
                 edge_data.name,
+                "--weight-data",
+                weight_data.name,
                 "--config",
                 config.name,
                 "--delete",

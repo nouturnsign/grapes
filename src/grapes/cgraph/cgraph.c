@@ -194,6 +194,8 @@ static PyMethodDef Multigraph_methods[] = {
      "Return the number of edges in the graph."},
     {"get_edges", (PyCFunction) Multigraph_get_edges, METH_NOARGS,
      "Return the edges in the graph."},
+    {"get_weights", (PyCFunction) Multigraph_get_weights, METH_NOARGS,
+     "Get the weights in the graph."},
     {"add_node", (PyCFunction) Multigraph_add_node, METH_NOARGS,
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Multigraph_add_edge,
@@ -253,6 +255,39 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         }
     }
     return edges;
+}
+
+static PyObject *
+Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
+{
+    PyObject *weights = PyList_New(self->edge_count);
+    if (weights == NULL) {
+        PyErr_SetString(PyExc_MemoryError,
+                        "Unable to initialize weights list");
+    }
+
+    Py_ssize_t i = 0;
+    PyObject  *weight;
+    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
+            Py_ssize_t v = self->adj_list[u][j];
+            if (!self->is_directed && u > v) {
+                continue;
+            }
+            double w = self->weight[u][j];
+            weight = PyFloat_FromDouble(w);
+            if (weight == NULL) {
+                PyErr_Format(PyExc_TypeError,
+                             "Unable to format weight given w=%f", w);
+                return NULL;
+            }
+            if (PyList_SetItem(weights, i, weight) == -1) {
+                return NULL;
+            }
+            ++i;
+        }
+    }
+    return weights;
 }
 
 static PyObject *

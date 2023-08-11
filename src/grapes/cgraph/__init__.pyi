@@ -45,6 +45,12 @@ class Multigraph:
         :returns: List of edges
         :rtype: list[tuple[int, int]]
         """
+    def get_weights(self: Self) -> list[float]:
+        """Get the weights in the graph.
+
+        :returns: List of weights in the same order as edges
+        :rtype: list[float]
+        """
     def add_node(self: Self) -> int:
         """Add a node to the graph.
 

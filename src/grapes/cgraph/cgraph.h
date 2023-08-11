@@ -16,7 +16,7 @@ static PyObject   *Multigraph_new(PyTypeObject *type, PyObject *args,
                                   PyObject *kwds);
 static int         Multigraph_init(MultigraphObject *self, PyObject *args,
                                    PyObject *kwds);
-static PyMethodDef Multigraph_methods[10];  // 1 more than listed below to
+static PyMethodDef Multigraph_methods[11];  // 1 more than listed below to
                                             // include a sentinel value
 static PyObject *Multigraph_get_node_count(MultigraphObject *self,
                                            PyObject *Py_UNUSED(ignored));
@@ -24,6 +24,8 @@ static PyObject *Multigraph_get_edge_count(MultigraphObject *self,
                                            PyObject *Py_UNUSED(ignored));
 static PyObject *Multigraph_get_edges(MultigraphObject *self,
                                       PyObject         *Py_UNUSED(ignored));
+static PyObject *Multigraph_get_weights(MultigraphObject *self,
+                                        PyObject         *Py_UNUSED(ignored));
 static PyObject *Multigraph_add_node(MultigraphObject *self,
                                      PyObject         *Py_UNUSED(ignored));
 static PyObject *Multigraph_add_edge(MultigraphObject *self, PyObject *args,

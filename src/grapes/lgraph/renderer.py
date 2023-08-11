@@ -14,19 +14,22 @@ class GraphWindow(mglw.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         mglw.logger.info(
-            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, and config={self.argv.config}"
+            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, and config={self.argv.config}"
         )
         with (
             open(self.argv.node_layout, "rb") as node_layout,
             open(self.argv.edge_data, "rb") as edge_data,
+            open(self.argv.weight_data, "rb") as weight_data,
             open(self.argv.config, "r") as config,
         ):
             self.node_layout: np.ndarray = np.load(node_layout)
             self.edge_data: np.ndarray = np.load(edge_data)
+            self.weight_data: np.ndarray = np.load(weight_data)
             self.config: dict = json.load(config)
         if self.argv.delete:
             os.remove(self.argv.node_layout)
             os.remove(self.argv.edge_data)
+            os.remove(self.argv.weight_data)
             os.remove(self.argv.config)
 
         if self.node_layout.dtype != np.float32:
@@ -39,10 +42,16 @@ class GraphWindow(mglw.WindowConfig):
             )
         if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
             raise TypeError(
-                f"Edge layout should be a e x 2 array; got {self.node_layout.shape}"
+                f"Edge data should be a e x 2 array; got {self.node_layout.shape}"
+            )
+        if self.weight_data.shape[0] != self.edge_data.shape[0]:
+            raise TypeError(
+                f"Weight data should have the same shape as edge_data; weight_data.shape={self.weight_data.shape}, edge_data.shape={self.edge_data.shape}"
             )
 
-        mglw.logger.info(f"Successfully loaded node layout, edge layout, and config")
+        mglw.logger.info(
+            f"Successfully loaded node layout, edge data, weight data, and config"
+        )
         self.node_layout_flattened = self.node_layout.flatten()
 
         directory = os.path.dirname(__file__)
@@ -137,6 +146,12 @@ class GraphWindow(mglw.WindowConfig):
             "--edge-data",
             type=str,
             help="Pass the edge data file (.npy) by path.",
+        )
+
+        parser.add_argument(
+            "--weight-data",
+            type=str,
+            help="Pass the weight data file (.npy) by path.",
         )
 
         parser.add_argument(
