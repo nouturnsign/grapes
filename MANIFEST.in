@@ -1,1 +1,2 @@
 include src/grapes/cgraph/*
+include src/grapes/lgraph/*
