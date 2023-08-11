@@ -2,6 +2,9 @@ try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
+import numpy.typing as npt
+
+import numpy as np
 
 class Multigraph:
     """Underlying graph type.
@@ -89,7 +92,7 @@ class Multigraph:
         initial_angle: float,
         x_center: float,
         y_center: float,
-    ) -> list[tuple[float, float]]:
+    ) -> npt.NDArray[np.double]:
         """Compute a circular layout for the graph.
 
         :param radius: Radius of circle
@@ -100,6 +103,6 @@ class Multigraph:
         :type x_center: float
         :param y_center: y-coordinate of center of circle
         :type y_center: float
-        :returns: List of 2d coordinates
-        :rtype: list[tuple[float, float]]
+        :returns: (number of nodes) by 2 array describing 2d coordinates
+        :rtype: npt.NDArray[np.double]
         """

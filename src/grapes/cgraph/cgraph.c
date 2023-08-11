@@ -3,6 +3,8 @@
 
 #include "cgraph.h"
 
+#include <numpy/arrayobject.h>
+
 #include "deque.h"
 #include "heap.h"
 #include "macros.h"
@@ -21,6 +23,10 @@ PyInit_cgraph(void)
         return NULL;
     }
 
+    import_array();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
     Py_INCREF(&MultigraphType);
     if (PyModule_AddObject(m, "Multigraph", (PyObject *) &MultigraphType) <
         0) {
@@ -556,7 +562,7 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
         return NULL;
     }
 
-    double(*raw_layout)[2] = malloc(sizeof(*raw_layout) * self->node_count);
+    double *raw_layout = malloc(sizeof(*raw_layout) * self->node_count * 2);
     if (raw_layout == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc raw_layout at memory address %p",
@@ -566,26 +572,12 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         double theta =
             ((double) i / self->node_count) * 2 * M_PI + initial_angle;
-        raw_layout[i][0] = radius * cos(theta) + x_center;
-        raw_layout[i][1] = radius * sin(theta) + y_center;
+        raw_layout[i * 2 + 0] = radius * cos(theta) + x_center;
+        raw_layout[i * 2 + 1] = radius * sin(theta) + y_center;
     }
 
-    PyObject *layout = PyList_New(self->node_count);
-    if (layout == NULL) {
-        PyErr_SetString(PyExc_MemoryError, "Unable to initialize layout");
-    }
-    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
-        PyObject *coords =
-            Py_BuildValue("(dd)", raw_layout[i][0], raw_layout[i][1]);
-        if (coords == NULL) {
-            PyErr_Format(PyExc_TypeError,
-                         "Unable to format uv given x=%f and y=%f",
-                         raw_layout[i][0], raw_layout[i][1]);
-            return NULL;
-        }
-        if (PyList_SetItem(layout, i, coords) == -1) {
-            return NULL;
-        }
-    }
+    const npy_intp dims[2] = {self->node_count, 2};
+    PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_DOUBLE,
+                                                      (void *) raw_layout);
     return layout;
 }
