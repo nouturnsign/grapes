@@ -1,4 +1,4 @@
-from typing import Hashable, Optional
+from typing import Hashable, Optional, Union
 
 try:
     from typing import Self
@@ -209,12 +209,47 @@ class LabeledGraph:
         """
         return self.underlying_graph.is_bipartite()
 
+    def compute_circular_layout(
+        self: Self,
+        radius: float,
+        initial_angle: float,
+        x_center: float,
+        y_center: float,
+    ) -> npt.NDArray[np.float32]:
+        """Compute a circular layout for the graph.
+
+        :param radius: Radius of circle
+        :type radius: float
+        :param initial_angle: Initial angle in radians
+        :type initial_angle: float
+        :param x_center: x-coordinate of center of circle
+        :type x_center: float
+        :param y_center: y-coordinate of center of circle
+        :type y_center: float
+        :returns: (number of nodes) by 2 array describing 2d coordinates
+        :rtype: npt.NDArray[np.float32]
+        """
+        return self.underlying_graph.compute_circular_layout(
+            radius, initial_angle, x_center, y_center
+        )
+
     def draw(
         self: Self,
         layout: npt.NDArray[np.float32],
         *,
         filled: bool = True,
     ) -> None:
+        """Draw the graph.
+
+        :param layout: A n x 2 array with dtype np.float32 representing the 2d
+            coordinates of each node.
+        :type layout: npt.NDArray[np.float32]
+        :param filled: Whether or not to fill node shape, defaults to True
+        :type filled: bool
+
+        .. note::
+            Currently, exceptions are undocumented.
+        """
         raw_config = {
             "filled": filled,
         }
