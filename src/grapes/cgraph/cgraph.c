@@ -577,7 +577,7 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     }
 
     const npy_intp dims[2] = {self->node_count, 2};
-    PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_DOUBLE,
+    PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_FLOAT32,
                                                       (void *) raw_layout);
     if (PyErr_Occurred()) {
         return NULL;

@@ -92,7 +92,7 @@ class Multigraph:
         initial_angle: float,
         x_center: float,
         y_center: float,
-    ) -> npt.NDArray[np.double]:
+    ) -> npt.NDArray[np.float32]:
         """Compute a circular layout for the graph.
 
         :param radius: Radius of circle
@@ -104,5 +104,5 @@ class Multigraph:
         :param y_center: y-coordinate of center of circle
         :type y_center: float
         :returns: (number of nodes) by 2 array describing 2d coordinates
-        :rtype: npt.NDArray[np.double]
+        :rtype: npt.NDArray[np.float32]
         """
