@@ -6,7 +6,6 @@ __all__ = [
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
-    "InvertibleMapping",
 ]
 
 from .cgraph import Multigraph
@@ -17,5 +16,4 @@ from .lgraph import (
     GraphDuplicateNodeError,
     SimpleGraphWithLoopError,
     SimpleGraphWithDuplicateEdgeError,
-    InvertibleMapping,
 )
