@@ -71,6 +71,7 @@ class GraphWindow(mglw.WindowConfig):
                 NODE_LAYOUT_CHUNK_SIZE * 2,
             ),
         )
+        self.node_radius: float = self.config["node_radius"]
 
         directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
@@ -101,13 +102,25 @@ class GraphWindow(mglw.WindowConfig):
             mglw.logger.info(f"{name} {type(member)} {member}")
 
         _theta = np.linspace(0, 2 * np.pi, 360)
-        self.node_shape = (0.1 * np.dstack((np.cos(_theta), np.sin(_theta)))).astype(
-            np.float32
-        )
+        self.node_shape = (
+            self.node_radius * np.dstack((np.cos(_theta), np.sin(_theta)))
+        ).astype(np.float32)
 
-        view_box = (-self.aspect_ratio * 3, -3, self.aspect_ratio * 3, 3)
+        margin = self.node_radius * 2 + 50
+        fit_ur = np.max(self.node_layout, axis=0)
+        fit_dl = np.min(self.node_layout, axis=0)
+        center = (fit_ur + fit_dl) / 2
+        fit_width = fit_ur[0] - fit_dl[0] + margin
+        fit_height = fit_ur[1] - fit_dl[1] + margin
+        if fit_width / fit_height > self.aspect_ratio:
+            fit_height = fit_width / self.aspect_ratio
+        else:
+            fit_width = fit_height * self.aspect_ratio
 
-        left, bottom, right, top = view_box
+        left = center[0] - fit_width / 2
+        bottom = center[1] - fit_height / 2
+        right = center[0] + fit_width / 2
+        top = center[1] + fit_height / 2
         z_near = -1
         z_far = 1
         self.camera = np.array(

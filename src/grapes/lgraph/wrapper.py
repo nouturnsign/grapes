@@ -277,6 +277,7 @@ class LabeledGraph:
         save_path: str = None,
         *,
         filled: bool = True,
+        node_radius: float = 30.0,
     ) -> None:
         """Draw the graph.
 
@@ -288,12 +289,15 @@ class LabeledGraph:
         :type save_path: str
         :param filled: Whether or not to fill node shape, defaults to True
         :type filled: bool
+        :param node_radius: Radius of node, defaults to 30.0
+        :type node_radius: float
 
         .. note::
             Currently, exceptions are undocumented.
         """
         raw_config = {
             "filled": filled,
+            "node_radius": node_radius,
         }
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,
