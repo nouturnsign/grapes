@@ -34,6 +34,7 @@ class GraphWindow(mglw.WindowConfig):
             os.remove(self.argv.weight_data)
             os.remove(self.argv.config)
         self.save_path = self.argv.save_path
+        self.has_edges = self.edge_data.size > 0
 
         if self.node_layout.dtype != np.float32:
             raise TypeError(
@@ -43,14 +44,20 @@ class GraphWindow(mglw.WindowConfig):
             raise TypeError(
                 f"Node layout should be a n x 2 array; got {self.node_layout.shape}"
             )
-        if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
-            raise TypeError(
-                f"Edge data should be a e x 2 array; got {self.edge_data.shape}"
-            )
-        if self.weight_data.shape[0] != self.edge_data.shape[0]:
-            raise TypeError(
-                f"Weight data should have the same shape as edge_data; weight_data.shape={self.weight_data.shape}, edge_data.shape={self.edge_data.shape}"
-            )
+        if self.has_edges:
+            if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
+                raise TypeError(
+                    f"Edge data should be a e x 2 array; got {self.edge_data.shape}"
+                )
+            if self.weight_data.shape[0] != self.edge_data.shape[0]:
+                raise TypeError(
+                    f"Weight data should have the same shape as edge_data; weight_data.shape={self.weight_data.shape}, edge_data.shape={self.edge_data.shape}"
+                )
+        else:
+            if self.weight_data.size > 0:
+                mglw.logger.warning(
+                    "Received empty edge data but non-empty weight data"
+                )
 
         mglw.logger.info(
             f"Successfully loaded node layout, edge data, weight data, config, and save_path"
@@ -132,16 +139,17 @@ class GraphWindow(mglw.WindowConfig):
             "in_vert",
         )
 
-        self.edge_mvp = self.edge_program["mvp"]
-        self.edge_vbo = self.ctx.buffer(node_layout_flattened)
-        self.edge_ebo = self.ctx.buffer(self.edge_data)
-        self.edge_vao = self.ctx.simple_vertex_array(
-            self.edge_program,
-            self.edge_vbo,
-            "in_vert",
-            index_buffer=self.edge_ebo,
-            index_element_size=self.edge_data.itemsize,
-        )
+        if self.has_edges:
+            self.edge_mvp = self.edge_program["mvp"]
+            self.edge_vbo = self.ctx.buffer(node_layout_flattened)
+            self.edge_ebo = self.ctx.buffer(self.edge_data)
+            self.edge_vao = self.ctx.simple_vertex_array(
+                self.edge_program,
+                self.edge_vbo,
+                "in_vert",
+                index_buffer=self.edge_ebo,
+                index_element_size=self.edge_data.itemsize,
+            )
 
     @classmethod
     def add_arguments(cls, parser):
@@ -182,8 +190,9 @@ class GraphWindow(mglw.WindowConfig):
 
     def render(self, time, frametime):
         self.ctx.clear(1.0, 1.0, 1.0)
-        self.edge_mvp.write(self.camera)
-        self.edge_vao.render(moderngl.LINES)
+        if self.has_edges:
+            self.edge_mvp.write(self.camera)
+            self.edge_vao.render(moderngl.LINES)
         self.node_mvp.write(self.camera)
         self.node_instance_vbo.write(self.node_shape)
         for node_layout_chunk in self.node_layout_chunks:
