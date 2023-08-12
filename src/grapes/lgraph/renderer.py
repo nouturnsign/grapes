@@ -169,9 +169,9 @@ class GraphWindow(mglw.WindowConfig):
 
     def render(self, time, frametime):
         self.ctx.clear(1.0, 1.0, 1.0)
+        self.edge_mvp.write(self.camera)
+        self.edge_vao.render(moderngl.LINES)
         self.node_offsets.write(self.node_layout_flattened)
         self.node_mvp.write(self.camera)
         self.node_instance_vbo.write(self.node_shape)
         self.node_vao.render(self.node_mode, instances=self.node_layout.shape[0])
-        self.edge_mvp.write(self.camera)
-        self.edge_vao.render(moderngl.LINES)
