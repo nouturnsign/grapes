@@ -249,20 +249,20 @@ class LabeledGraph:
 
     def compute_circular_layout(
         self: Self,
-        radius: float,
-        initial_angle: float,
-        x_center: float,
-        y_center: float,
+        radius: float = 1000.0,
+        initial_angle: float = 0.0,
+        x_center: float = 0.0,
+        y_center: float = 0.0,
     ) -> npt.NDArray[np.float32]:
         """Compute a circular layout for the graph.
 
-        :param radius: Radius of circle
+        :param radius: Radius of circle, defaults to 1000.0
         :type radius: float
-        :param initial_angle: Initial angle in radians
+        :param initial_angle: Initial angle in radians, defaults to 0.0
         :type initial_angle: float
-        :param x_center: x-coordinate of center of circle
+        :param x_center: x-coordinate of center of circle, defaults to 0.0
         :type x_center: float
-        :param y_center: y-coordinate of center of circle
+        :param y_center: y-coordinate of center of circle, defaults to 0.0
         :type y_center: float
         :returns: (number of nodes) by 2 array describing 2d coordinates
         :rtype: npt.NDArray[np.float32]
