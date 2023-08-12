@@ -56,7 +56,7 @@ class GraphWindow(mglw.WindowConfig):
         )
         self.node_layout_flattened = self.node_layout.flatten()
 
-        directory = os.path.dirname(__file__)
+        directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
             open(os.path.join(directory, "node.vert"), "r") as node_vertex_shader,
             open(os.path.join(directory, "node.frag"), "r") as node_fragment_shader,
