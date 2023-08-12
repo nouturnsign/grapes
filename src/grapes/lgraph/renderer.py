@@ -5,6 +5,7 @@ import os
 import moderngl
 import moderngl_window as mglw
 import numpy as np
+from PIL import Image
 
 
 class GraphWindow(mglw.WindowConfig):
@@ -14,7 +15,7 @@ class GraphWindow(mglw.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         mglw.logger.info(
-            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, and config={self.argv.config}"
+            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, config={self.argv.config}, and save_path={self.argv.save_path}"
         )
         with (
             open(self.argv.node_layout, "rb") as node_layout,
@@ -31,6 +32,7 @@ class GraphWindow(mglw.WindowConfig):
             os.remove(self.argv.edge_data)
             os.remove(self.argv.weight_data)
             os.remove(self.argv.config)
+        self.save_path = self.argv.save_path
 
         if self.node_layout.dtype != np.float32:
             raise TypeError(
@@ -50,7 +52,7 @@ class GraphWindow(mglw.WindowConfig):
             )
 
         mglw.logger.info(
-            f"Successfully loaded node layout, edge data, weight data, and config"
+            f"Successfully loaded node layout, edge data, weight data, config, and save_path"
         )
         self.node_layout_flattened = self.node_layout.flatten()
 
@@ -165,6 +167,10 @@ class GraphWindow(mglw.WindowConfig):
             help="Whether or not to delete the files afterward.",
         )
 
+        parser.add_argument(
+            "--save-path", type=str, help="Pass where to save a new image."
+        )
+
     def render(self, time, frametime):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.edge_mvp.write(self.camera)
@@ -173,3 +179,11 @@ class GraphWindow(mglw.WindowConfig):
         self.node_mvp.write(self.camera)
         self.node_instance_vbo.write(self.node_shape)
         self.node_vao.render(self.node_mode, instances=self.node_layout.shape[0])
+
+        if self.save_path is not None:
+            image = Image.frombytes(
+                "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
+            )
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)
+            image.save(self.save_path)
+            self.wnd.close()

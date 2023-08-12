@@ -8,6 +8,7 @@ import numpy.typing as npt
 
 import itertools
 import json
+import os
 import tempfile
 from enum import Enum, auto
 
@@ -273,6 +274,7 @@ class LabeledGraph:
     def draw(
         self: Self,
         layout: npt.NDArray[np.float32],
+        save_path: str = None,
         *,
         filled: bool = True,
     ) -> None:
@@ -281,6 +283,9 @@ class LabeledGraph:
         :param layout: A n x 2 array with dtype np.float32 representing the 2d
             coordinates of each node.
         :type layout: npt.NDArray[np.float32]
+        :param save_path: Optionally where to save the image instead of opening
+            a window, defaults to None.
+        :type save_path: str
         :param filled: Whether or not to fill node shape, defaults to True
         :type filled: bool
 
@@ -305,17 +310,22 @@ class LabeledGraph:
                 np.array(self.underlying_graph.get_weights(), dtype=np.float32),
             )
             json.dump(raw_config, config)
+
+        args = (
+            "--node-layout",
+            node_layout.name,
+            "--edge-data",
+            edge_data.name,
+            "--weight-data",
+            weight_data.name,
+            "--config",
+            config.name,
+            "--delete",
+        )
+        if save_path is not None:
+            args += ("--window", "headless", "--save-path", save_path)
+
         mglw.run_window_config(
             GraphWindow,
-            args=(
-                "--node-layout",
-                node_layout.name,
-                "--edge-data",
-                edge_data.name,
-                "--weight-data",
-                weight_data.name,
-                "--config",
-                config.name,
-                "--delete",
-            ),
+            args=args,
         )
