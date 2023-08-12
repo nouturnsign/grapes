@@ -278,6 +278,7 @@ class LabeledGraph:
         *,
         filled: bool = True,
         node_radius: float = 30.0,
+        background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
         """Draw the graph.
 
@@ -291,6 +292,9 @@ class LabeledGraph:
         :type filled: bool
         :param node_radius: Radius of node, defaults to 30.0
         :type node_radius: float
+        :param background_color: Color of background specified in RGBA (0-255)
+            format, defaults to (0, 0, 0, 0)
+        :type background_color: tuple[int, int, int, int]
 
         .. note::
             Currently, exceptions are undocumented.
@@ -298,6 +302,7 @@ class LabeledGraph:
         raw_config = {
             "filled": filled,
             "node_radius": node_radius,
+            "background_color": background_color,
         }
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,

@@ -29,4 +29,6 @@ print(g.shortest_path("A", "G"))
 print(g.is_connected())
 print(g.get_component_sizes())
 print(g.is_bipartite())
-g.draw(g.compute_circular_layout(), "example.png")
+g.draw(
+    g.compute_circular_layout(), "example.png", background_color=(255, 255, 255, 255)
+)

@@ -72,6 +72,9 @@ class GraphWindow(mglw.WindowConfig):
             ),
         )
         self.node_radius: float = self.config["node_radius"]
+        self.background_color: tuple[int, int, int, int] = tuple(
+            self.config["background_color"]
+        )
 
         directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
@@ -202,7 +205,12 @@ class GraphWindow(mglw.WindowConfig):
         )
 
     def render(self, time, frametime):
-        self.ctx.clear(1.0, 1.0, 1.0)
+        self.ctx.clear(
+            red=self.background_color[0] / 255,
+            green=self.background_color[1] / 255,
+            blue=self.background_color[2] / 255,
+            alpha=self.background_color[3] / 255,
+        )
         if self.has_edges:
             self.edge_mvp.write(self.camera)
             self.edge_vao.render(moderngl.LINES)
@@ -213,9 +221,11 @@ class GraphWindow(mglw.WindowConfig):
             self.node_vao.render(self.node_mode, instances=len(node_layout_chunk) // 2)
 
         if self.save_path is not None:
-            image = Image.frombytes(
-                "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
+            image = Image.new("RGBA", self.wnd.fbo.size, self.background_color)
+            image.paste(
+                Image.frombytes(
+                    "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
+                ).transpose(Image.FLIP_TOP_BOTTOM)
             )
-            image = image.transpose(Image.FLIP_TOP_BOTTOM)
             image.save(self.save_path)
             self.wnd.close()
