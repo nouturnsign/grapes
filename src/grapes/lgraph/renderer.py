@@ -1,11 +1,12 @@
 import json
 import os
 
-
 import moderngl
 import moderngl_window as mglw
 import numpy as np
 from PIL import Image
+
+NODE_LAYOUT_CHUNK_SIZE = 512
 
 
 class GraphWindow(mglw.WindowConfig):
@@ -54,7 +55,15 @@ class GraphWindow(mglw.WindowConfig):
         mglw.logger.info(
             f"Successfully loaded node layout, edge data, weight data, config, and save_path"
         )
-        self.node_layout_flattened = self.node_layout.flatten()
+        node_layout_flattened = self.node_layout.flatten()
+        self.node_layout_chunks = np.array_split(
+            node_layout_flattened,
+            np.arange(
+                NODE_LAYOUT_CHUNK_SIZE * 2,
+                len(node_layout_flattened),
+                NODE_LAYOUT_CHUNK_SIZE * 2,
+            ),
+        )
 
         directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
@@ -124,7 +133,7 @@ class GraphWindow(mglw.WindowConfig):
         )
 
         self.edge_mvp = self.edge_program["mvp"]
-        self.edge_vbo = self.ctx.buffer(self.node_layout_flattened)
+        self.edge_vbo = self.ctx.buffer(node_layout_flattened)
         self.edge_ebo = self.ctx.buffer(self.edge_data)
         self.edge_vao = self.ctx.simple_vertex_array(
             self.edge_program,
@@ -175,10 +184,11 @@ class GraphWindow(mglw.WindowConfig):
         self.ctx.clear(1.0, 1.0, 1.0)
         self.edge_mvp.write(self.camera)
         self.edge_vao.render(moderngl.LINES)
-        self.node_offsets.write(self.node_layout_flattened)
         self.node_mvp.write(self.camera)
         self.node_instance_vbo.write(self.node_shape)
-        self.node_vao.render(self.node_mode, instances=self.node_layout.shape[0])
+        for node_layout_chunk in self.node_layout_chunks:
+            self.node_offsets.write(node_layout_chunk)
+            self.node_vao.render(self.node_mode, instances=len(node_layout_chunk) // 2)
 
         if self.save_path is not None:
             image = Image.frombytes(
