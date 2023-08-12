@@ -6,6 +6,7 @@ except ImportError:
     from typing_extensions import Self
 import numpy.typing as npt
 
+import itertools
 import json
 import tempfile
 from enum import Enum, auto
@@ -48,6 +49,9 @@ class LabeledGraph:
     :param underlying_graph: Optional :class:`grapes.Multigraph` to
         wrap, defaults to None
     :type underlying_graph: :class:`grapes.Multigraph`
+    :param _unique_edges: Set of unique edges in a simple graph for internal
+        use, defaults to None
+    :type _unique_edges: set[tuple[Hashable, Hashable]]
     :param _has_negative_weight: Whether or not the underlying graph has
         edge weights for internal use, defaults to None
     :type _has_negative_weight: bool
@@ -59,10 +63,14 @@ class LabeledGraph:
         is_simple: bool = True,
         label_data: Optional[InvertibleMapping[Hashable, int]] = None,
         underlying_graph: Optional[Multigraph] = None,
+        _unique_edges: Optional[set[tuple[Hashable, Hashable]]] = None,
         _has_negative_weight: bool = False,
     ) -> None:
         self.is_simple = is_simple
-        self.unique_edges = set()
+        if _unique_edges is None:
+            self.unique_edges = set()
+        else:
+            self.unique_edges = _unique_edges
         if label_data is None:
             self.label_data = InvertibleMapping()
         else:
@@ -74,6 +82,33 @@ class LabeledGraph:
         else:
             self.underlying_graph = underlying_graph
         self._has_negative_weight = _has_negative_weight
+
+    @classmethod
+    def complete(
+        cls: type[Self],
+        *,
+        labels: Optional[list[Hashable]] = None,
+        n: Optional[int] = None,
+    ) -> Self:
+        if labels is None:
+            if n is None:
+                raise ValueError("One of n or labels should be set")
+            labels = list(range(n))
+        n = len(labels)
+        underlying_graph = Multigraph(False, n)
+        for u, v in itertools.combinations(range(n), 2):
+            underlying_graph.add_edge(u, v)
+        inv_labels = dict(enumerate(labels))
+        labels = {v: k for k, v in enumerate(labels)}
+
+        return cls(
+            False,
+            True,
+            InvertibleMapping(labels, inv_labels, False),
+            underlying_graph,
+            set(itertools.combinations(range(n), 2)),
+            False,
+        )
 
     @property
     def nodes(self: Self) -> list[Hashable]:
