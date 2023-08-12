@@ -44,7 +44,7 @@ class GraphWindow(mglw.WindowConfig):
             )
         if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
             raise TypeError(
-                f"Edge data should be a e x 2 array; got {self.node_layout.shape}"
+                f"Edge data should be a e x 2 array; got {self.edge_data.shape}"
             )
         if self.weight_data.shape[0] != self.edge_data.shape[0]:
             raise TypeError(
