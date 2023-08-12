@@ -3,7 +3,6 @@ import grapes
 import unittest
 
 
-# TODO: properly write tests
 class DijkstrasTestCase(unittest.TestCase):
     def __init__(
         self, graph: grapes.Multigraph, case_number: int, correct_weight: float

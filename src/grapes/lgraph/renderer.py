@@ -82,13 +82,11 @@ class GraphWindow(mglw.WindowConfig):
             member = self.edge_program[name]
             mglw.logger.info(f"{name} {type(member)} {member}")
 
-        # TODO: allow custom node shape
         _theta = np.linspace(0, 2 * np.pi, 360)
         self.node_shape = (0.1 * np.dstack((np.cos(_theta), np.sin(_theta)))).astype(
             np.float32
         )
 
-        # TODO: allow custom view_box
         view_box = (-self.aspect_ratio * 3, -3, self.aspect_ratio * 3, 3)
 
         left, bottom, right, top = view_box
