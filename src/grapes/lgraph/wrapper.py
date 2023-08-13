@@ -8,7 +8,6 @@ import numpy.typing as npt
 
 import itertools
 import json
-import os
 import tempfile
 from enum import Enum, auto
 
@@ -24,8 +23,6 @@ from .errors import (
 from .invmap import InvertibleMapping
 from .renderer import GraphWindow
 from ..cgraph import Multigraph
-
-RGBAColor = tuple[int, int, int, int]
 
 TRANSPARENT = (0, 0, 0, 0)
 TABLEAU_BLUE = (31, 119, 180, 1)
@@ -283,13 +280,13 @@ class LabeledGraph:
         save_path: str = None,
         *,
         node_radius: float = 50.0,
-        background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
+        background_color: tuple[int, int, int, int] = TRANSPARENT,
         edge_segment_width: float = 10.0,
         edge_arrowhead_width: float = 45.0,
         edge_arrowhead_height: float = 60.0,
         has_arrows: bool = True,
-        node_border_color: RGBAColor = TRANSPARENT,
-        node_fill_color: RGBAColor = TABLEAU_BLUE,
+        node_border_color: tuple[int, int, int, int] = TRANSPARENT,
+        node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
     ) -> None:
         """Draw the graph.
 
@@ -304,8 +301,24 @@ class LabeledGraph:
         :param node_radius: Radius of node, defaults to 30.0
         :type node_radius: float
         :param background_color: Color of background specified in RGBA (0-255)
-            format, defaults to (0, 0, 0, 0)
+            format, defaults to :const:`grapes.TRANSPARENT`
         :type background_color: tuple[int, int, int, int]
+        :param edge_segment_width: Width of an edge's segment, defaults to 10.0
+        :type edge_segment_width: float
+        :param edge_arrowhead_width: Width of an edge's arrowhead, defaults to
+            45.0
+        :type edge_arrowhead_width: float
+        :param edge_arrowhead_height: Height of an edge's arrowhead, defaults
+            to 60.0
+        :type edge_arrowhead_height: float
+        :param has_arrows: Whether or not to include arrows, defaults to True
+        :type has_arrows: bool
+        :param node_border_color: Color of a node's border specified in RGBA
+            (0-255), defaults to :const:`grapes.TRANSPARENT`
+        :type node_border_color: tuple[int, int, int, int]
+        :param node_fill_color: Color of a node's border specified in RGBA
+            (0-255), defaults to :const:`grapes.TABLEAU_BLUE`
+        :type node_fill_color: tuple[int, int, int, int]
 
         .. note::
             Currently, exceptions are undocumented.
