@@ -1,3 +1,5 @@
+import numpy.typing as npt
+
 import json
 import os
 
@@ -79,6 +81,30 @@ class GraphWindow(mglw.WindowConfig):
         self.edge_arrowhead_width: float = self.config["edge_arrowhead_width"]
         self.edge_arrowhead_height: float = self.config["edge_arrowhead_height"]
         self.arrow_style: int = self.config["arrow_style"]
+        self.node_border_color: npt.NDArray[np.float32] = (
+            np.array(self.config["node_border_color"], dtype=np.float32) / 255.0
+        )
+        self.node_fill_color: npt.NDArray[np.float32] = (
+            np.array(self.config["node_fill_color"], dtype=np.float32) / 255.0
+        )
+        self.has_fill = self.config["node_fill_color"][3] > 0 and (
+            all(
+                f_color != bg_color
+                for f_color, bg_color in zip(
+                    self.config["node_fill_color"][:3],
+                    self.config["background_color"][:3],
+                )
+            )
+        )
+        self.has_border = self.config["node_border_color"][3] > 0 and (
+            all(
+                b_color != bg_color
+                for b_color, bg_color in zip(
+                    self.config["node_border_color"][:3],
+                    self.config["background_color"][:3],
+                )
+            )
+        )
 
         directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
@@ -147,12 +173,8 @@ class GraphWindow(mglw.WindowConfig):
             dtype=np.float32,
         )
 
-        if self.config["filled"]:
-            self.node_mode = moderngl.TRIANGLE_FAN
-        else:
-            self.node_mode = moderngl.LINE_STRIP_ADJACENCY
-
         self.node_offsets = self.node_program["offsets"]
+        self.node_color = self.node_program["color"]
         self.node_mvp = self.node_program["mvp"]
         self.node_instance_vbo = self.ctx.buffer(reserve=self.node_shape.nbytes)
         self.node_vao = self.ctx.simple_vertex_array(
@@ -235,7 +257,16 @@ class GraphWindow(mglw.WindowConfig):
         self.node_instance_vbo.write(self.node_shape)
         for node_layout_chunk in self.node_layout_chunks:
             self.node_offsets.write(node_layout_chunk)
-            self.node_vao.render(self.node_mode, instances=len(node_layout_chunk) // 2)
+            if self.has_fill:
+                self.node_color.write(self.node_fill_color)
+                self.node_vao.render(
+                    moderngl.TRIANGLE_FAN, instances=len(node_layout_chunk) // 2
+                )
+            if self.has_border:
+                self.node_color.write(self.node_border_color)
+                self.node_vao.render(
+                    moderngl.LINE_STRIP_ADJACENCY, instances=len(node_layout_chunk) // 2
+                )
 
         if self.save_path is not None:
             image = Image.new("RGBA", self.wnd.fbo.size, self.background_color)

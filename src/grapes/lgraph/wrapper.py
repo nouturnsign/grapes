@@ -25,6 +25,11 @@ from .invmap import InvertibleMapping
 from .renderer import GraphWindow
 from ..cgraph import Multigraph
 
+RGBAColor = tuple[int, int, int, int]
+
+TRANSPARENT = (0, 0, 0, 0)
+TABLEAU_BLUE = (31, 119, 180, 1)
+
 
 class ShortestPathAlgorithm(Enum):
     """Implemented shortest path algorithms."""
@@ -277,13 +282,14 @@ class LabeledGraph:
         layout: npt.NDArray[np.float32],
         save_path: str = None,
         *,
-        filled: bool = True,
-        node_radius: float = 30.0,
+        node_radius: float = 50.0,
         background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
         edge_segment_width: float = 10.0,
         edge_arrowhead_width: float = 45.0,
         edge_arrowhead_height: float = 60.0,
         has_arrows: bool = True,
+        node_border_color: RGBAColor = TRANSPARENT,
+        node_fill_color: RGBAColor = TABLEAU_BLUE,
     ) -> None:
         """Draw the graph.
 
@@ -305,15 +311,18 @@ class LabeledGraph:
             Currently, exceptions are undocumented.
         """
         arrow_style = 0 if not has_arrows else 1 if self.is_directed else 2
+
         raw_config = {
-            "filled": filled,
             "node_radius": node_radius,
             "background_color": background_color,
             "edge_segment_width": edge_segment_width,
             "edge_arrowhead_width": edge_arrowhead_width,
             "edge_arrowhead_height": edge_arrowhead_height,
             "arrow_style": arrow_style,
+            "node_border_color": node_border_color,
+            "node_fill_color": node_fill_color,
         }
+
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,
             tempfile.NamedTemporaryFile("w+b", delete=False) as edge_data,
