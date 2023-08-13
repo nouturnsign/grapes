@@ -497,8 +497,8 @@ Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
 }
 
 static PyObject *
-Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
-                               PyObject *kwds)
+Multigraph_get_component_sizes(MultigraphObject *self,
+                               PyObject         *Py_UNUSED(ignored))
 {
     Py_ssize_t *sizes = malloc(sizeof(*sizes) * self->node_count);
     if (sizes == NULL) {
@@ -554,7 +554,7 @@ Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
 }
 
 static PyObject *
-Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
+Multigraph_is_bipartite(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
     short *color = malloc(sizeof(*color) * self->node_count);
     if (color == NULL) {
