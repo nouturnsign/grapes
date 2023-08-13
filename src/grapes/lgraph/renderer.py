@@ -75,6 +75,10 @@ class GraphWindow(mglw.WindowConfig):
         self.background_color: tuple[int, int, int, int] = tuple(
             self.config["background_color"]
         )
+        self.edge_segment_width: float = self.config["edge_segment_width"]
+        self.edge_arrowhead_width: float = self.config["edge_arrowhead_width"]
+        self.edge_arrowhead_height: float = self.config["edge_arrowhead_height"]
+        self.arrow_style: int = self.config["arrow_style"]
 
         directory = os.path.join(os.path.dirname(__file__), "shaders")
         with (
@@ -93,10 +97,12 @@ class GraphWindow(mglw.WindowConfig):
         with (
             open(os.path.join(directory, "edge.vert"), "r") as edge_vertex_shader,
             open(os.path.join(directory, "edge.frag"), "r") as edge_fragment_shader,
+            open(os.path.join(directory, "edge.geom"), "r") as edge_geometry_shader,
         ):
             self.edge_program = self.ctx.program(
                 vertex_shader=edge_vertex_shader.read(),
                 fragment_shader=edge_fragment_shader.read(),
+                geometry_shader=edge_geometry_shader.read(),
             )
         mglw.logger.info(f"Successfully loaded edge shaders")
         mglw.logger.info("Got the following internal members from edge shaders:")
@@ -157,6 +163,17 @@ class GraphWindow(mglw.WindowConfig):
 
         if self.has_edges:
             self.edge_mvp = self.edge_program["mvp"]
+            self.edge_mvp.write(self.camera)
+            self.edge_node_radius = self.edge_program["node_radius"]
+            self.edge_node_radius.value = self.node_radius
+            self.edge_edge_segment_width = self.edge_program["edge_segment_width"]
+            self.edge_edge_segment_width.value = self.edge_segment_width
+            self.edge_edge_arrowhead_width = self.edge_program["edge_arrowhead_width"]
+            self.edge_edge_arrowhead_width.value = self.edge_arrowhead_width
+            self.edge_edge_arrowhead_height = self.edge_program["edge_arrowhead_height"]
+            self.edge_edge_arrowhead_height.value = self.edge_arrowhead_height
+            self.edge_arrow_style = self.edge_program["arrow_style"]
+            self.edge_arrow_style.value = self.arrow_style
             self.edge_vbo = self.ctx.buffer(node_layout_flattened)
             self.edge_ebo = self.ctx.buffer(self.edge_data)
             self.edge_vao = self.ctx.simple_vertex_array(
@@ -212,8 +229,8 @@ class GraphWindow(mglw.WindowConfig):
             alpha=self.background_color[3] / 255,
         )
         if self.has_edges:
-            self.edge_mvp.write(self.camera)
             self.edge_vao.render(moderngl.LINES)
+
         self.node_mvp.write(self.camera)
         self.node_instance_vbo.write(self.node_shape)
         for node_layout_chunk in self.node_layout_chunks:

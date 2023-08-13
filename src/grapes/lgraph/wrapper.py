@@ -1,4 +1,4 @@
-from typing import Hashable, Optional, Union
+from typing import Hashable, Optional
 
 try:
     from typing import Self
@@ -67,6 +67,7 @@ class LabeledGraph:
         _unique_edges: Optional[set[tuple[Hashable, Hashable]]] = None,
         _has_negative_weight: bool = False,
     ) -> None:
+        self.is_directed = is_directed
         self.is_simple = is_simple
         if _unique_edges is None:
             self.unique_edges = set()
@@ -279,6 +280,10 @@ class LabeledGraph:
         filled: bool = True,
         node_radius: float = 30.0,
         background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
+        edge_segment_width: float = 10.0,
+        edge_arrowhead_width: float = 45.0,
+        edge_arrowhead_height: float = 60.0,
+        has_arrows: bool = True,
     ) -> None:
         """Draw the graph.
 
@@ -299,10 +304,15 @@ class LabeledGraph:
         .. note::
             Currently, exceptions are undocumented.
         """
+        arrow_style = 0 if not has_arrows else 1 if self.is_directed else 2
         raw_config = {
             "filled": filled,
             "node_radius": node_radius,
             "background_color": background_color,
+            "edge_segment_width": edge_segment_width,
+            "edge_arrowhead_width": edge_arrowhead_width,
+            "edge_arrowhead_height": edge_arrowhead_height,
+            "arrow_style": arrow_style,
         }
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,

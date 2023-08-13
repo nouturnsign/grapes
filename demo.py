@@ -1,6 +1,6 @@
 import grapes
 
-g = grapes.LabeledGraph()
+g = grapes.LabeledGraph(is_directed=True)
 g.add_node("A")
 g.add_node("B")
 g.add_node("C")
