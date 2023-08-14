@@ -24,7 +24,7 @@ from .invmap import InvertibleMapping
 from .renderer import GraphWindow
 from ..cgraph import Multigraph
 
-TRANSPARENT = (0, 0, 0, 0)
+TRANSPARENT = (255, 255, 255, 0)
 TABLEAU_BLUE = (31, 119, 180, 1)
 
 
