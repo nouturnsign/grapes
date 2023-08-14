@@ -2,6 +2,7 @@ __all__ = [
     "LabeledGraph",
     "ShortestPathAlgorithm",
     "TRANSPARENT",
+    "BLACK",
     "TABLEAU_BLUE",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
@@ -9,7 +10,13 @@ __all__ = [
     "SimpleGraphWithDuplicateEdgeError",
 ]
 
-from .wrapper import LabeledGraph, ShortestPathAlgorithm, TRANSPARENT, TABLEAU_BLUE
+from .wrapper import (
+    LabeledGraph,
+    ShortestPathAlgorithm,
+    TRANSPARENT,
+    BLACK,
+    TABLEAU_BLUE,
+)
 from .errors import (
     GraphMissingNodeError,
     GraphDuplicateNodeError,

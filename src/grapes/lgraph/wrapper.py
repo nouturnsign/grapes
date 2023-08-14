@@ -25,7 +25,8 @@ from .renderer import GraphWindow
 from ..cgraph import Multigraph
 
 TRANSPARENT = (255, 255, 255, 0)
-TABLEAU_BLUE = (31, 119, 180, 1)
+BLACK = (0, 0, 0, 255)
+TABLEAU_BLUE = (31, 119, 180, 255)
 
 
 class ShortestPathAlgorithm(Enum):
@@ -285,7 +286,6 @@ class LabeledGraph:
         edge_arrowhead_width: float = 45.0,
         edge_arrowhead_height: float = 60.0,
         has_arrows: bool = True,
-        node_border_color: tuple[int, int, int, int] = TRANSPARENT,
         node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
     ) -> None:
         """Draw the graph.
@@ -313,9 +313,6 @@ class LabeledGraph:
         :type edge_arrowhead_height: float
         :param has_arrows: Whether or not to include arrows, defaults to True
         :type has_arrows: bool
-        :param node_border_color: Color of a node's border specified in RGBA
-            (0-255), defaults to :const:`grapes.TRANSPARENT`
-        :type node_border_color: tuple[int, int, int, int]
         :param node_fill_color: Color of a node's border specified in RGBA
             (0-255), defaults to :const:`grapes.TABLEAU_BLUE`
         :type node_fill_color: tuple[int, int, int, int]
@@ -332,7 +329,6 @@ class LabeledGraph:
             "edge_arrowhead_width": edge_arrowhead_width,
             "edge_arrowhead_height": edge_arrowhead_height,
             "arrow_style": arrow_style,
-            "node_border_color": node_border_color,
             "node_fill_color": node_fill_color,
         }
 

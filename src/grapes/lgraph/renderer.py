@@ -8,8 +8,6 @@ import moderngl_window as mglw
 import numpy as np
 from PIL import Image
 
-NODE_LAYOUT_CHUNK_SIZE = 512
-
 
 class GraphWindow(mglw.WindowConfig):
     gl_version = (3, 3)
@@ -64,43 +62,23 @@ class GraphWindow(mglw.WindowConfig):
         mglw.logger.info(
             f"Successfully loaded node layout, edge data, weight data, config, and save_path"
         )
-        node_layout_flattened = self.node_layout.flatten()
-        self.node_layout_chunks = np.array_split(
-            node_layout_flattened,
-            np.arange(
-                NODE_LAYOUT_CHUNK_SIZE * 2,
-                len(node_layout_flattened),
-                NODE_LAYOUT_CHUNK_SIZE * 2,
-            ),
-        )
-        self.node_radius: float = self.config["node_radius"]
-        self.background_color: tuple[int, int, int, int] = tuple(
+        self.node_layout_flattened = self.node_layout.flatten()
+        self.config_node_radius: float = self.config["node_radius"]
+        self.config_background_color: tuple[int, int, int, int] = tuple(
             self.config["background_color"]
         )
-        self.edge_segment_width: float = self.config["edge_segment_width"]
-        self.edge_arrowhead_width: float = self.config["edge_arrowhead_width"]
-        self.edge_arrowhead_height: float = self.config["edge_arrowhead_height"]
-        self.arrow_style: int = self.config["arrow_style"]
-        self.node_border_color: npt.NDArray[np.float32] = (
-            np.array(self.config["node_border_color"], dtype=np.float32) / 255.0
-        )
-        self.node_fill_color: npt.NDArray[np.float32] = (
+        self.config_edge_segment_width: float = self.config["edge_segment_width"]
+        self.config_edge_arrowhead_width: float = self.config["edge_arrowhead_width"]
+        self.config_edge_arrowhead_height: float = self.config["edge_arrowhead_height"]
+        self.config_arrow_style: int = self.config["arrow_style"]
+        self.config_node_fill_color: npt.NDArray[np.float32] = (
             np.array(self.config["node_fill_color"], dtype=np.float32) / 255.0
         )
-        self.has_fill = self.config["node_fill_color"][3] > 0 and (
+        self.config_has_fill = self.config["node_fill_color"][3] > 0 and (
             all(
                 f_color != bg_color
                 for f_color, bg_color in zip(
                     self.config["node_fill_color"][:3],
-                    self.config["background_color"][:3],
-                )
-            )
-        )
-        self.has_border = self.config["node_border_color"][3] > 0 and (
-            all(
-                b_color != bg_color
-                for b_color, bg_color in zip(
-                    self.config["node_border_color"][:3],
                     self.config["background_color"][:3],
                 )
             )
@@ -110,10 +88,12 @@ class GraphWindow(mglw.WindowConfig):
         with (
             open(os.path.join(directory, "node.vert"), "r") as node_vertex_shader,
             open(os.path.join(directory, "node.frag"), "r") as node_fragment_shader,
+            open(os.path.join(directory, "node.geom"), "r") as node_geometry_shader,
         ):
             self.node_program = self.ctx.program(
                 vertex_shader=node_vertex_shader.read(),
                 fragment_shader=node_fragment_shader.read(),
+                geometry_shader=node_geometry_shader.read(),
             )
         mglw.logger.info(f"Successfully loaded node shaders")
         mglw.logger.info("Got the following internal members from node shaders:")
@@ -136,12 +116,7 @@ class GraphWindow(mglw.WindowConfig):
             member = self.edge_program[name]
             mglw.logger.info(f"{name} {type(member)} {member}")
 
-        _theta = np.linspace(0, 2 * np.pi, 360)
-        self.node_shape = (
-            self.node_radius * np.dstack((np.cos(_theta), np.sin(_theta)))
-        ).astype(np.float32)
-
-        margin = self.node_radius * 2 + 50
+        margin = self.config_node_radius * 2 + 50
         fit_ur = np.max(self.node_layout, axis=0)
         fit_dl = np.min(self.node_layout, axis=0)
         center = (fit_ur + fit_dl) / 2
@@ -173,13 +148,16 @@ class GraphWindow(mglw.WindowConfig):
             dtype=np.float32,
         )
 
-        self.node_offsets = self.node_program["offsets"]
-        self.node_color = self.node_program["color"]
         self.node_mvp = self.node_program["mvp"]
-        self.node_instance_vbo = self.ctx.buffer(reserve=self.node_shape.nbytes)
+        self.node_mvp.write(self.camera)
+        self.node_node_radius = self.node_program["node_radius"]
+        self.node_node_radius.value = self.config_node_radius
+        self.node_fill_color = self.node_program["fill_color"]
+        self.node_fill_color.write(self.config_node_fill_color)
+        self.node_vbo = self.ctx.buffer(self.node_layout_flattened)
         self.node_vao = self.ctx.simple_vertex_array(
             self.node_program,
-            self.node_instance_vbo,
+            self.node_vbo,
             "in_vert",
         )
 
@@ -187,16 +165,16 @@ class GraphWindow(mglw.WindowConfig):
             self.edge_mvp = self.edge_program["mvp"]
             self.edge_mvp.write(self.camera)
             self.edge_node_radius = self.edge_program["node_radius"]
-            self.edge_node_radius.value = self.node_radius
+            self.edge_node_radius.value = self.config_node_radius
             self.edge_edge_segment_width = self.edge_program["edge_segment_width"]
-            self.edge_edge_segment_width.value = self.edge_segment_width
+            self.edge_edge_segment_width.value = self.config_edge_segment_width
             self.edge_edge_arrowhead_width = self.edge_program["edge_arrowhead_width"]
-            self.edge_edge_arrowhead_width.value = self.edge_arrowhead_width
+            self.edge_edge_arrowhead_width.value = self.config_edge_arrowhead_width
             self.edge_edge_arrowhead_height = self.edge_program["edge_arrowhead_height"]
-            self.edge_edge_arrowhead_height.value = self.edge_arrowhead_height
+            self.edge_edge_arrowhead_height.value = self.config_edge_arrowhead_height
             self.edge_arrow_style = self.edge_program["arrow_style"]
-            self.edge_arrow_style.value = self.arrow_style
-            self.edge_vbo = self.ctx.buffer(node_layout_flattened)
+            self.edge_arrow_style.value = self.config_arrow_style
+            self.edge_vbo = self.ctx.buffer(self.node_layout_flattened)
             self.edge_ebo = self.ctx.buffer(self.edge_data)
             self.edge_vao = self.ctx.simple_vertex_array(
                 self.edge_program,
@@ -245,31 +223,18 @@ class GraphWindow(mglw.WindowConfig):
 
     def render(self, time, frametime):
         self.ctx.clear(
-            red=self.background_color[0] / 255,
-            green=self.background_color[1] / 255,
-            blue=self.background_color[2] / 255,
-            alpha=self.background_color[3] / 255,
+            red=self.config_background_color[0] / 255,
+            green=self.config_background_color[1] / 255,
+            blue=self.config_background_color[2] / 255,
+            alpha=self.config_background_color[3] / 255,
         )
         if self.has_edges:
             self.edge_vao.render(moderngl.LINES)
 
-        self.node_mvp.write(self.camera)
-        self.node_instance_vbo.write(self.node_shape)
-        for node_layout_chunk in self.node_layout_chunks:
-            self.node_offsets.write(node_layout_chunk)
-            if self.has_fill:
-                self.node_color.write(self.node_fill_color)
-                self.node_vao.render(
-                    moderngl.TRIANGLE_FAN, instances=len(node_layout_chunk) // 2
-                )
-            if self.has_border:
-                self.node_color.write(self.node_border_color)
-                self.node_vao.render(
-                    moderngl.LINE_STRIP_ADJACENCY, instances=len(node_layout_chunk) // 2
-                )
+        self.node_vao.render(moderngl.POINTS)
 
         if self.save_path is not None:
-            image = Image.new("RGBA", self.wnd.fbo.size, self.background_color)
+            image = Image.new("RGBA", self.wnd.fbo.size, self.config_background_color)
             image.paste(
                 Image.frombytes(
                     "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
