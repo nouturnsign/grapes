@@ -57,7 +57,7 @@ class LabeledGraph:
         use, defaults to None
     :type _unique_edges: set[tuple[Hashable, Hashable]]
     :param _has_negative_weight: Whether or not the underlying graph has
-        edge weights for internal use, defaults to None
+        edge weights for internal use, defaults to False
     :type _has_negative_weight: bool
     """
 
