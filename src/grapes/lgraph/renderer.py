@@ -6,6 +6,7 @@ import os
 import moderngl
 import moderngl_window as mglw
 import numpy as np
+import pyrr
 from PIL import Image
 
 
@@ -136,19 +137,8 @@ class GraphWindow(mglw.WindowConfig):
         top = center[1] + fit_height / 2
         z_near = -1
         z_far = 1
-        self.camera = np.array(
-            [
-                [2 / (right - left), 0, 0, 0],
-                [0, 2 / (top - bottom), 0, 0],
-                [0, 0, -2 / (z_far - z_near), 0],
-                [
-                    -((right + left) / (right - left)),
-                    -((top + bottom) / (top - bottom)),
-                    -((z_far + z_near) / (z_far - z_near)),
-                    1,
-                ],
-            ],
-            dtype=np.float32,
+        self.camera = pyrr.matrix44.create_orthogonal_projection(
+            left, right, bottom, top, z_near, z_far, dtype=np.float32
         )
 
         self.node_mvp = self.node_program["mvp"]
