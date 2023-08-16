@@ -232,6 +232,5 @@ class GraphWindow(mglw.WindowConfig):
             image = Image.frombytes(
                 "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
             ).transpose(Image.FLIP_TOP_BOTTOM)
-            )
             image.save(self.save_path)
             self.wnd.close()
