@@ -74,6 +74,9 @@ class GraphWindow(mglw.WindowConfig):
         self.config_node_fill_color: npt.NDArray[np.float32] = (
             np.array(self.config["node_fill_color"], dtype=np.float32) / 255.0
         )
+        self.config_edge_color: npt.NDArray[np.float32] = (
+            np.array(self.config["edge_color"], dtype=np.float32) / 255.0
+        )
         self.config_has_fill = self.config["node_fill_color"][3] > 0 and (
             all(
                 f_color != bg_color
@@ -172,6 +175,8 @@ class GraphWindow(mglw.WindowConfig):
             self.edge_edge_arrowhead_width.value = self.config_edge_arrowhead_width
             self.edge_edge_arrowhead_height = self.edge_program["edge_arrowhead_height"]
             self.edge_edge_arrowhead_height.value = self.config_edge_arrowhead_height
+            self.edge_edge_color = self.edge_program["edge_color"]
+            self.edge_edge_color.value = self.config_edge_color
             self.edge_arrow_style = self.edge_program["arrow_style"]
             self.edge_arrow_style.value = self.config_arrow_style
             self.edge_vbo = self.ctx.buffer(self.node_layout_flattened)

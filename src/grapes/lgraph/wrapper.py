@@ -287,6 +287,7 @@ class LabeledGraph:
         edge_arrowhead_height: float = 60.0,
         has_arrows: bool = True,
         node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
+        edge_color: tuple[int, int, int, int] = BLACK,
     ) -> None:
         """Draw the graph.
 
@@ -316,6 +317,9 @@ class LabeledGraph:
         :param node_fill_color: Color of a node's border specified in RGBA
             (0-255), defaults to :const:`grapes.TABLEAU_BLUE`
         :type node_fill_color: tuple[int, int, int, int]
+        :param edge_color: Color of an edge specified in RGBA (0-255), defaults
+            to :const:`grapes.BLACK`
+        :type edge_color: tuple[int, int, int, int]
 
         .. note::
             Currently, exceptions are undocumented.
@@ -330,6 +334,7 @@ class LabeledGraph:
             "edge_arrowhead_height": edge_arrowhead_height,
             "arrow_style": arrow_style,
             "node_fill_color": node_fill_color,
+            "edge_color": edge_color,
         }
 
         with (
