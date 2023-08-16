@@ -229,11 +229,9 @@ class GraphWindow(mglw.WindowConfig):
         self.node_vao.render(moderngl.POINTS)
 
         if self.save_path is not None:
-            image = Image.new("RGBA", self.wnd.fbo.size, self.config_background_color)
-            image.paste(
-                Image.frombytes(
-                    "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
-                ).transpose(Image.FLIP_TOP_BOTTOM)
+            image = Image.frombytes(
+                "RGBA", self.wnd.fbo.size, self.wnd.fbo.read(components=4)
+            ).transpose(Image.FLIP_TOP_BOTTOM)
             )
             image.save(self.save_path)
             self.wnd.close()

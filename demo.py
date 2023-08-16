@@ -29,4 +29,10 @@ print(g.shortest_path("A", "G"))
 print(g.is_connected())
 print(g.get_component_sizes())
 print(g.is_bipartite())
-g.draw(g.compute_circular_layout())
+g.draw(
+    g.compute_circular_layout(),
+    "example.png",
+    background_color=grapes.BLACK,
+    node_fill_color=grapes.WHITE,
+    edge_color=grapes.WHITE,
+)

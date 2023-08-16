@@ -3,6 +3,7 @@ __all__ = [
     "ShortestPathAlgorithm",
     "TRANSPARENT",
     "BLACK",
+    "WHITE",
     "TABLEAU_BLUE",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
@@ -15,6 +16,7 @@ from .wrapper import (
     ShortestPathAlgorithm,
     TRANSPARENT,
     BLACK,
+    WHITE,
     TABLEAU_BLUE,
 )
 from .errors import (

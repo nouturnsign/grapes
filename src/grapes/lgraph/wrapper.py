@@ -26,6 +26,7 @@ from ..cgraph import Multigraph
 
 TRANSPARENT = (255, 255, 255, 0)
 BLACK = (0, 0, 0, 255)
+WHITE = (255, 255, 255, 255)
 TABLEAU_BLUE = (31, 119, 180, 255)
 
 
