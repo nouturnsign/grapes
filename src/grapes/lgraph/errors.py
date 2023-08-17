@@ -52,3 +52,14 @@ class SimpleGraphWithDuplicateEdgeError(Exception):
         super().__init__(
             f"Simple graph cannot contain duplicate edges. {u_label=}, {v_label=}"
         )
+
+
+class RendererInvalidInputError(Exception):
+    """Raised when input data ro renderer is incorrectly formatted.
+
+    :param message: Message
+    :type message: str
+    """
+
+    def __init__(self: Self, message: str) -> None:
+        super().__init__(message)

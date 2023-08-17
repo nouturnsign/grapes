@@ -7,6 +7,7 @@ __all__ = [
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
+    "RendererInvalidInputError",
     "colors",
 ]
 
@@ -19,5 +20,6 @@ from .lgraph import (
     GraphDuplicateNodeError,
     SimpleGraphWithLoopError,
     SimpleGraphWithDuplicateEdgeError,
+    RendererInvalidInputError,
     colors,
 )

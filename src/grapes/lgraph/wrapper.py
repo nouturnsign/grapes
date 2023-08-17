@@ -70,10 +70,6 @@ class LabeledGraph:
     ) -> None:
         self.is_directed = is_directed
         self.is_simple = is_simple
-        if _unique_edges is None:
-            self.unique_edges = set()
-        else:
-            self.unique_edges = _unique_edges
         if label_data is None:
             self.label_data = InvertibleMapping()
         else:
@@ -82,6 +78,10 @@ class LabeledGraph:
             self.underlying_graph = Multigraph(is_directed, len(self.label_data.keys()))
         else:
             self.underlying_graph = underlying_graph
+        if _unique_edges is None:
+            self.unique_edges = set()
+        else:
+            self.unique_edges = _unique_edges
         self._has_negative_weight = _has_negative_weight
 
     @classmethod
@@ -91,10 +91,20 @@ class LabeledGraph:
         labels: Optional[list[Hashable]] = None,
         n: Optional[int] = None,
     ) -> Self:
+        """Create a complete, undirected graph. Either the labels or n should
+        be specified. If n is specified, then labels will be set to 0 to n-1.
+
+        :param labels: Optional labels, defaults to None
+        :type labels: list[Hashable]
+        :param n: Optional number of nodes, defaults to None
+        :type n: int
+        """
         if labels is None:
             if n is None:
-                raise ValueError("One of n or labels should be set")
+                raise ValueError("Only one of n or labels should be set")
             labels = list(range(n))
+        if n is not None:
+            raise ValueError("Only one of n or labels should be set")
         n = len(labels)
         underlying_graph = Multigraph(False, n)
         for u, v in itertools.combinations(range(n), 2):
@@ -327,7 +337,7 @@ class LabeledGraph:
             (0-255), defaults to :const:`grapes.colors.BLACK`
         :type label_font_color: tuple[int, int, int, int]
 
-        .. note::
+        .. warning::
             Currently, exceptions are undocumented.
         """
         arrow_style = 0 if not has_arrows else 1 if self.is_directed else 2

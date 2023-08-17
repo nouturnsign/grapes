@@ -1,6 +1,13 @@
+from typing import Any
+
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 import numpy.typing as npt
 
 import json
+import logging
 import os
 
 import moderngl
@@ -9,17 +16,39 @@ import numpy as np
 import pyrr
 from PIL import Image
 
+from .errors import RendererInvalidInputError
+
 Image.MAX_IMAGE_PIXELS = 95 * 1238 * 2048
+mglw.setup_basic_logging(logging.WARNING)
+
+
+class RendererConfig(dict):
+    def __init__(self: Self, underlying_config: dict) -> None:
+        super().__init__(underlying_config)
+
+    def __getitem__(self: Self, __key: Any) -> Any:
+        if __key not in self:
+            raise RendererInvalidInputError(f"Config is missing key={__key}")
+        return super().__getitem__(__key)
 
 
 class GrapesRenderer(mglw.WindowConfig):
-    gl_version = (3, 3)
-    title = "grapes-graph"
+    """Grapes's graph visualization renderer."""
 
-    def __init__(self, **kwargs):
+    gl_version = (3, 3)
+    """gl_version: Minimum version of 3.3."""
+    title = "grapes-graph"
+    """title: Window title set to \"grapes-graph\""""
+
+    def __init__(self: Self, **kwargs):
         super().__init__(**kwargs)
         mglw.logger.info(
-            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, label_data={self.argv.label_data}, config={self.argv.config}, save_path={self.argv.save_path}"
+            f"Received node_layout={self.argv.node_layout}, "
+            f"edge_data={self.argv.edge_data}, "
+            f"weight_data={self.argv.weight_data}, "
+            f"label_data={self.argv.label_data}, "
+            f"config={self.argv.config}, "
+            f"save_path={self.argv.save_path}"
         )
         with (
             open(self.argv.node_layout, "rb") as node_layout,
@@ -32,7 +61,7 @@ class GrapesRenderer(mglw.WindowConfig):
             self.edge_data: np.ndarray = np.load(edge_data)
             self.weight_data: np.ndarray = np.load(weight_data)
             self.label_data: np.ndarray = np.load(label_data)
-            self.config: dict = json.load(config)
+            self.config: dict = RendererConfig(json.load(config))
         if self.argv.delete:
             os.remove(self.argv.node_layout)
             os.remove(self.argv.edge_data)
@@ -43,21 +72,27 @@ class GrapesRenderer(mglw.WindowConfig):
         self.has_edges = self.edge_data.size > 0
 
         if self.node_layout.dtype != np.float32:
-            raise TypeError(
+            raise RendererInvalidInputError(
                 f"Node layout should be of type np.float32; got {self.node_layout.dtype}"
             )
         if self.node_layout.ndim != 2 or self.node_layout.shape[1] != 2:
-            raise TypeError(
+            raise RendererInvalidInputError(
                 f"Node layout should be a n x 2 array; got {self.node_layout.shape}"
+            )
+        if self.node_layout.shape[0] == 0:
+            raise RendererInvalidInputError(
+                f"Node layout must contain at least one node; got {self.node_layout.shape[0]}"
             )
         if self.has_edges:
             if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
-                raise TypeError(
+                raise RendererInvalidInputError(
                     f"Edge data should be a e x 2 array; got {self.edge_data.shape}"
                 )
             if self.weight_data.shape[0] != self.edge_data.shape[0]:
-                raise TypeError(
-                    f"Weight data should have the same shape as edge_data; weight_data.shape={self.weight_data.shape}, edge_data.shape={self.edge_data.shape}"
+                raise RendererInvalidInputError(
+                    f"Weight data should have the same shape as edge_data; "
+                    f"weight_data.shape={self.weight_data.shape}, "
+                    f"edge_data.shape={self.edge_data.shape}"
                 )
         else:
             if self.weight_data.size > 0:
@@ -65,17 +100,20 @@ class GrapesRenderer(mglw.WindowConfig):
                     "Received empty edge data but non-empty weight data"
                 )
         if self.label_data.dtype.type != np.str_:
-            raise TypeError(
+            raise RendererInvalidInputError(
                 f"Label data should be of type np.unicode_; got {self.label_data.dtype}"
             )
         if self.label_data.shape[0] != self.node_layout.shape[0]:
-            raise TypeError(
-                f"Label data should have same number of nodes as node_layout {self.node_layout.shape[0]}; got {self.label_data.shape[0]}"
+            raise RendererInvalidInputError(
+                f"Label data should have same number of nodes as "
+                f"node_layout {self.node_layout.shape[0]}; "
+                f"got {self.label_data.shape[0]}"
             )
 
         mglw.logger.info(
             f"Successfully loaded node layout, edge data, weight data, config, and save_path"
         )
+
         self.node_layout_flattened = self.node_layout.flatten()
         self.config_node_radius: float = self.config["node_radius"]
         self.config_background_color: tuple[int, int, int, int] = tuple(
@@ -213,6 +251,8 @@ class GrapesRenderer(mglw.WindowConfig):
             )
 
         if self.config_has_labels:
+            mglw.logger.warning("Label support is currently limited.")
+
             FONT_ASPECT_RATIO = 1238.0 / 2048.0
             CHAR_OFFSET = 32
             TEXTURE_PATH = os.path.join(
@@ -233,7 +273,9 @@ class GrapesRenderer(mglw.WindowConfig):
                 or np.max(raw_text_int) > TEXTURE_CHAR_MAX
             ):
                 raise ValueError(
-                    f"Label contains unsupported characters. Characters should have unicode values between {TEXTURE_CHAR_MIN} and {TEXTURE_CHAR_MAX}"
+                    f"Label contains unsupported characters. "
+                    f"Characters should have unicode values "
+                    f"between {TEXTURE_CHAR_MIN} and {TEXTURE_CHAR_MAX}"
                 )
             text = lookup[raw_text_centered.view(np.int32)]
 
@@ -291,6 +333,7 @@ class GrapesRenderer(mglw.WindowConfig):
 
     @classmethod
     def add_arguments(cls, parser):
+        """Arguments added to grapes's renderer."""
         parser.add_argument(
             "--node-layout",
             type=str,
@@ -332,7 +375,8 @@ class GrapesRenderer(mglw.WindowConfig):
             "--save-path", type=str, help="Pass where to save a new image."
         )
 
-    def render(self, time, frametime):
+    def render(self: Self, time, frametime):
+        """Renders the graph."""
         self.ctx.clear(
             red=self.config_background_color[0] / 255,
             green=self.config_background_color[1] / 255,

@@ -6,6 +6,7 @@ __all__ = [
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
+    "RendererInvalidInputError",
 ]
 
 from .wrapper import (
@@ -20,4 +21,5 @@ from .errors import (
     GraphDuplicateNodeError,
     SimpleGraphWithLoopError,
     SimpleGraphWithDuplicateEdgeError,
+    RendererInvalidInputError,
 )
