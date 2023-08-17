@@ -21,7 +21,7 @@ from .errors import (
     SimpleGraphWithLoopError,
 )
 from .invmap import InvertibleMapping
-from .renderer import GraphWindow
+from .renderer import GrapesRenderer
 from ..cgraph import Multigraph
 
 TRANSPARENT = (255, 255, 255, 0)
@@ -44,7 +44,8 @@ class ShortestPathAlgorithm(Enum):
 
 class LabeledGraph:
     """Represents a graph, allowing for nodes to be represented by label. The
-    class is a thin wrapper for :class:`grapes.Multigraph`.
+    class is a thin wrapper for :class:`grapes.Multigraph` and
+    :class:`grapes.GrapesRenderer`.
 
     :param is_directed: Whether or not the graph is directed, defaults to False
     :type is_directed: bool
@@ -393,6 +394,6 @@ class LabeledGraph:
             args += ("--window", "headless", "--save-path", save_path)
 
         mglw.run_window_config(
-            GraphWindow,
+            GrapesRenderer,
             args=args,
         )

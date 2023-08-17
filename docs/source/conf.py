@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "grapes-graph"
 copyright = "2023, Eric Wang"
 author = "Eric Wang"
-release = "0.0.6"
+release = "0.0.7"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -34,9 +34,7 @@ exclude_patterns = []
 
 
 def skip_cgraph_and_lgraph(app, what, name, obj, skip, options):
-    if (what == "package" and "cgraph" in name) or (
-        what == "module" and "lgraph" in name
-    ):
+    if "cgraph" in name or "lgraph" in name:
         skip = True
     return skip
 

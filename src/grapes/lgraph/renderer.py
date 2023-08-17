@@ -12,9 +12,9 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = 95 * 1238 * 2048
 
 
-class GraphWindow(mglw.WindowConfig):
+class GrapesRenderer(mglw.WindowConfig):
     gl_version = (3, 3)
-    title = "Grapes Graph"
+    title = "grapes-graph"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

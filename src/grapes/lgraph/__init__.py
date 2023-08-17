@@ -6,6 +6,7 @@ __all__ = [
     "WHITE",
     "TABLEAU_BLUE",
     "TABLEAU_ORANGE",
+    "GrapesRenderer",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
@@ -20,6 +21,9 @@ from .wrapper import (
     WHITE,
     TABLEAU_BLUE,
     TABLEAU_ORANGE,
+)
+from .renderer import (
+    GrapesRenderer,
 )
 from .errors import (
     GraphMissingNodeError,
