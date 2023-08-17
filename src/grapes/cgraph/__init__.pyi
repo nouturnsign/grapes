@@ -1,3 +1,7 @@
+"""Contains the Multigraph class, implementing algorithms and data structures
+in C.
+"""
+
 try:
     from typing import Self
 except ImportError:

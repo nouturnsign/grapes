@@ -41,7 +41,8 @@ PyInit_cgraph(void)
 static struct PyModuleDef cgraphmodule = {
     PyModuleDef_HEAD_INIT,
     .m_name = "cgraph",
-    .m_doc = PyDoc_STR("Grapes core functionality written in C"),
+    .m_doc = PyDoc_STR("Contains the Multigraph class, implementing "
+                       "algorithms and data structures in C."),
     .m_size = -1,
 };
 

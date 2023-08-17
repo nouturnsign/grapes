@@ -1,3 +1,7 @@
+"""Contains the LabeledGraph and GrapesRenderer classes, implementing graph
+visualization and providing a thin Pythonic wrapper.
+"""
+
 __all__ = [
     "LabeledGraph",
     "ShortestPathAlgorithm",

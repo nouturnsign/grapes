@@ -1,3 +1,5 @@
+"""A graph algorithms and visualization Python package."""
+
 __all__ = [
     "Multigraph",
     "LabeledGraph",
