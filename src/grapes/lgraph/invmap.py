@@ -5,6 +5,8 @@ try:
 except ImportError:
     from typing_extensions import Self
 
+from collections.abc import ItemsView, KeysView, ValuesView
+
 K1 = TypeVar("K1", bound=Hashable)
 K2 = TypeVar("K2", bound=Hashable)
 
@@ -41,3 +43,12 @@ class InvertibleMapping(Generic[K1, K2]):
 
     def __contains__(self: Self, key: Union[K1, K2]) -> bool:
         return (key in self._original_mapping) or (key in self._inverse_mapping)
+
+    def keys(self: Self) -> KeysView[K1]:
+        return self._original_mapping.keys()
+
+    def values(self: Self) -> ValuesView[K2]:
+        return self._inverse_mapping.keys()
+
+    def items(self: Self) -> ItemsView[K1, K2]:
+        return self._original_mapping.values()

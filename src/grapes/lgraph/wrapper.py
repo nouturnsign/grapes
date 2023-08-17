@@ -84,9 +84,7 @@ class LabeledGraph:
         else:
             self.label_data = label_data
         if underlying_graph is None:
-            self.underlying_graph = Multigraph(
-                is_directed, len(self.label_data._original_mapping.keys())
-            )
+            self.underlying_graph = Multigraph(is_directed, len(self.label_data.keys()))
         else:
             self.underlying_graph = underlying_graph
         self._has_negative_weight = _has_negative_weight
@@ -124,7 +122,7 @@ class LabeledGraph:
 
         :type: list[Hashable]
         """
-        return list(self.label_data._original_mapping.keys())
+        return list(self.label_data.keys())
 
     @property
     def edges(self: Self) -> dict[tuple[Hashable, Hashable], float]:
@@ -371,7 +369,7 @@ class LabeledGraph:
             np.save(
                 label_data,
                 np.array(
-                    list(str(label) for label in self.label_data._original_mapping),
+                    list(str(label) for label in self.label_data.keys()),
                     dtype=np.unicode_,
                 ),
             )
