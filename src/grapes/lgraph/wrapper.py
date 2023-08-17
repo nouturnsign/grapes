@@ -276,14 +276,14 @@ class LabeledGraph:
         layout: npt.NDArray[np.float32],
         save_path: str = None,
         *,
-        node_radius: float = 50.0,
         background_color: tuple[int, int, int, int] = TRANSPARENT,
+        node_radius: float = 50.0,
+        node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
         edge_segment_width: float = 10.0,
+        edge_color: tuple[int, int, int, int] = BLACK,
+        has_arrows: bool = True,
         edge_arrowhead_width: float = 45.0,
         edge_arrowhead_height: float = 60.0,
-        has_arrows: bool = True,
-        node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
-        edge_color: tuple[int, int, int, int] = BLACK,
         has_labels: bool = True,
         label_font_size: float = 80.0,
         label_font_color: tuple[int, int, int, int] = BLACK,
@@ -298,33 +298,33 @@ class LabeledGraph:
         :type save_path: str
         :param filled: Whether or not to fill node shape, defaults to True
         :type filled: bool
+        :param background_color: Color of background specified in RGBA (0-255)
+            format, defaults to :const:`grapes.colors.TRANSPARENT`
+        :type background_color: tuple[int, int, int, int]
         :param node_radius: Radius of node, defaults to 30.0
         :type node_radius: float
-        :param background_color: Color of background specified in RGBA (0-255)
-            format, defaults to :const:`grapes.TRANSPARENT`
-        :type background_color: tuple[int, int, int, int]
+        :param node_fill_color: Color of a node's border specified in RGBA
+            (0-255), defaults to :const:`grapes.colors.TABLEAU_BLUE`
+        :type node_fill_color: tuple[int, int, int, int]
         :param edge_segment_width: Width of an edge's segment, defaults to 10.0
         :type edge_segment_width: float
+        :param edge_color: Color of an edge specified in RGBA (0-255), defaults
+            to :const:`grapes.colors.BLACK`
+        :type edge_color: tuple[int, int, int, int]
+        :param has_arrows: Whether or not to include arrows, defaults to True
+        :type has_arrows: bool
         :param edge_arrowhead_width: Width of an edge's arrowhead, defaults to
             45.0
         :type edge_arrowhead_width: float
         :param edge_arrowhead_height: Height of an edge's arrowhead, defaults
             to 60.0
         :type edge_arrowhead_height: float
-        :param has_arrows: Whether or not to include arrows, defaults to True
-        :type has_arrows: bool
-        :param node_fill_color: Color of a node's border specified in RGBA
-            (0-255), defaults to :const:`grapes.TABLEAU_BLUE`
-        :type node_fill_color: tuple[int, int, int, int]
-        :param edge_color: Color of an edge specified in RGBA (0-255), defaults
-            to :const:`grapes.BLACK`
-        :type edge_color: tuple[int, int, int, int]
         :param has_labels: Whether or not to include labels, defaults to True
         :type has_labels: bool
         :param label_font_size: Size of the font in pixels
         :type label_font_size: float
         :param label_font_color: Color of a label's font specified in RGBA
-            (0-255), defaults to :const:`grapes.BLACK`
+            (0-255), defaults to :const:`grapes.colors.BLACK`
         :type label_font_color: tuple[int, int, int, int]
 
         .. note::
@@ -333,14 +333,14 @@ class LabeledGraph:
         arrow_style = 0 if not has_arrows else 1 if self.is_directed else 2
 
         raw_config = {
-            "node_radius": node_radius,
             "background_color": background_color,
+            "node_radius": node_radius,
+            "node_fill_color": node_fill_color,
             "edge_segment_width": edge_segment_width,
+            "edge_color": edge_color,
+            "arrow_style": arrow_style,
             "edge_arrowhead_width": edge_arrowhead_width,
             "edge_arrowhead_height": edge_arrowhead_height,
-            "arrow_style": arrow_style,
-            "node_fill_color": node_fill_color,
-            "edge_color": edge_color,
             "has_labels": has_labels,
             "label_font_size": label_font_size,
             "label_font_color": label_font_color,
