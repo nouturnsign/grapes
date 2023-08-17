@@ -14,6 +14,7 @@ from enum import Enum, auto
 import moderngl_window as mglw
 import numpy as np
 
+from .colors import TRANSPARENT, BLACK, TABLEAU_BLUE
 from .errors import (
     GraphDuplicateNodeError,
     GraphMissingNodeError,
@@ -23,12 +24,6 @@ from .errors import (
 from .invmap import InvertibleMapping
 from .renderer import GrapesRenderer
 from ..cgraph import Multigraph
-
-TRANSPARENT = (255, 255, 255, 0)
-BLACK = (0, 0, 0, 255)
-WHITE = (255, 255, 255, 255)
-TABLEAU_BLUE = (31, 119, 180, 255)
-TABLEAU_ORANGE = (255, 127, 14, 255)
 
 
 class ShortestPathAlgorithm(Enum):

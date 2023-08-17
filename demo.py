@@ -31,10 +31,10 @@ print(g.get_component_sizes())
 print(g.is_bipartite())
 g.draw(
     g.compute_circular_layout(),
-    background_color=grapes.BLACK,
-    node_fill_color=grapes.WHITE,
-    edge_color=grapes.WHITE,
+    background_color=grapes.colors.BLACK,
+    node_fill_color=grapes.colors.WHITE,
+    edge_color=grapes.colors.WHITE,
     has_labels=True,
     label_font_size=50.0,
-    label_font_color=grapes.TABLEAU_ORANGE,
+    label_font_color=grapes.colors.TABLEAU_ORANGE,
 )
