@@ -28,6 +28,7 @@ TRANSPARENT = (255, 255, 255, 0)
 BLACK = (0, 0, 0, 255)
 WHITE = (255, 255, 255, 255)
 TABLEAU_BLUE = (31, 119, 180, 255)
+TABLEAU_ORANGE = (255, 127, 14, 255)
 
 
 class ShortestPathAlgorithm(Enum):
@@ -289,6 +290,9 @@ class LabeledGraph:
         has_arrows: bool = True,
         node_fill_color: tuple[int, int, int, int] = TABLEAU_BLUE,
         edge_color: tuple[int, int, int, int] = BLACK,
+        has_labels: bool = True,
+        label_font_size: float = 80.0,
+        label_font_color: tuple[int, int, int, int] = BLACK,
     ) -> None:
         """Draw the graph.
 
@@ -336,12 +340,16 @@ class LabeledGraph:
             "arrow_style": arrow_style,
             "node_fill_color": node_fill_color,
             "edge_color": edge_color,
+            "has_labels": has_labels,
+            "label_font_size": label_font_size,
+            "label_font_color": label_font_color,
         }
 
         with (
             tempfile.NamedTemporaryFile("w+b", delete=False) as node_layout,
             tempfile.NamedTemporaryFile("w+b", delete=False) as edge_data,
             tempfile.NamedTemporaryFile("w+b", delete=False) as weight_data,
+            tempfile.NamedTemporaryFile("w+b", delete=False) as label_data,
             tempfile.NamedTemporaryFile("w+", delete=False) as config,
         ):
             np.save(node_layout, layout)
@@ -352,6 +360,13 @@ class LabeledGraph:
                 weight_data,
                 np.array(self.underlying_graph.get_weights(), dtype=np.float32),
             )
+            np.save(
+                label_data,
+                np.array(
+                    list(str(label) for label in self.label_data._original_mapping),
+                    dtype=np.unicode_,
+                ),
+            )
             json.dump(raw_config, config)
 
         args = (
@@ -361,6 +376,8 @@ class LabeledGraph:
             edge_data.name,
             "--weight-data",
             weight_data.name,
+            "--label-data",
+            label_data.name,
             "--config",
             config.name,
             "--delete",

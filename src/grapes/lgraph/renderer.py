@@ -9,6 +9,8 @@ import numpy as np
 import pyrr
 from PIL import Image
 
+Image.MAX_IMAGE_PIXELS = 95 * 1238 * 2048
+
 
 class GraphWindow(mglw.WindowConfig):
     gl_version = (3, 3)
@@ -17,22 +19,25 @@ class GraphWindow(mglw.WindowConfig):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         mglw.logger.info(
-            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, config={self.argv.config}, and save_path={self.argv.save_path}"
+            f"Received node_layout={self.argv.node_layout}, edge_data={self.argv.edge_data}, weight_data={self.argv.weight_data}, label_data={self.argv.label_data}, config={self.argv.config}, save_path={self.argv.save_path}"
         )
         with (
             open(self.argv.node_layout, "rb") as node_layout,
             open(self.argv.edge_data, "rb") as edge_data,
             open(self.argv.weight_data, "rb") as weight_data,
+            open(self.argv.label_data, "rb") as label_data,
             open(self.argv.config, "r") as config,
         ):
             self.node_layout: np.ndarray = np.load(node_layout)
             self.edge_data: np.ndarray = np.load(edge_data)
             self.weight_data: np.ndarray = np.load(weight_data)
+            self.label_data: np.ndarray = np.load(label_data)
             self.config: dict = json.load(config)
         if self.argv.delete:
             os.remove(self.argv.node_layout)
             os.remove(self.argv.edge_data)
             os.remove(self.argv.weight_data)
+            os.remove(self.argv.label_data)
             os.remove(self.argv.config)
         self.save_path = self.argv.save_path
         self.has_edges = self.edge_data.size > 0
@@ -59,6 +64,14 @@ class GraphWindow(mglw.WindowConfig):
                 mglw.logger.warning(
                     "Received empty edge data but non-empty weight data"
                 )
+        if self.label_data.dtype.type != np.str_:
+            raise TypeError(
+                f"Label data should be of type np.unicode_; got {self.label_data.dtype}"
+            )
+        if self.label_data.shape[0] != self.node_layout.shape[0]:
+            raise TypeError(
+                f"Label data should have same number of nodes as node_layout {self.node_layout.shape[0]}; got {self.label_data.shape[0]}"
+            )
 
         mglw.logger.info(
             f"Successfully loaded node layout, edge data, weight data, config, and save_path"
@@ -77,6 +90,11 @@ class GraphWindow(mglw.WindowConfig):
         )
         self.config_edge_color: npt.NDArray[np.float32] = (
             np.array(self.config["edge_color"], dtype=np.float32) / 255.0
+        )
+        self.config_has_labels: bool = self.config["has_labels"]
+        self.config_label_font_size: float = self.config["label_font_size"]
+        self.config_label_font_color: npt.NDArray[np.float32] = (
+            np.array(self.config["label_font_color"], dtype=np.float32) / 255.0
         )
         self.config_has_fill = self.config["node_fill_color"][3] > 0 and (
             all(
@@ -118,6 +136,21 @@ class GraphWindow(mglw.WindowConfig):
         mglw.logger.info("Got the following internal members from edge shaders:")
         for name in self.edge_program:
             member = self.edge_program[name]
+            mglw.logger.info(f"{name} {type(member)} {member}")
+        with (
+            open(os.path.join(directory, "text.vert"), "r") as text_vertex_shader,
+            open(os.path.join(directory, "text.frag"), "r") as text_fragment_shader,
+            open(os.path.join(directory, "text.geom"), "r") as text_geometry_shader,
+        ):
+            self.text_program = self.ctx.program(
+                vertex_shader=text_vertex_shader.read(),
+                fragment_shader=text_fragment_shader.read(),
+                geometry_shader=text_geometry_shader.read(),
+            )
+        mglw.logger.info(f"Successfully loaded text shaders")
+        mglw.logger.info("Got the following internal members from text shaders:")
+        for name in self.text_program:
+            member = self.text_program[name]
             mglw.logger.info(f"{name} {type(member)} {member}")
 
         margin = self.config_node_radius * 2 + 50
@@ -179,6 +212,75 @@ class GraphWindow(mglw.WindowConfig):
                 index_element_size=self.edge_data.itemsize,
             )
 
+        if self.config_has_labels:
+            FONT_ASPECT_RATIO = 1238.0 / 2048.0
+            CHAR_OFFSET = 32
+            TEXTURE_PATH = os.path.join(
+                os.path.dirname(__file__), "font", "courier-prime-32-126.png"
+            )
+            TEXTURE_CHAR_MIN = 32
+            TEXTURE_CHAR_MAX = 126
+
+            self.text_mvp = self.text_program["mvp"]
+            self.text_mvp.write(self.camera)
+            self.text_font_size_px = self.text_program["font_size_px"]
+            self.text_font_size_px.value = self.config_label_font_size
+            self.text_font_aspect_ratio = self.text_program["font_aspect_ratio"]
+            self.text_font_aspect_ratio.value = FONT_ASPECT_RATIO
+            self.text_char_offset = self.text_program["char_offset"]
+            self.text_char_offset.value = CHAR_OFFSET
+            self.text_font_color = self.text_program["font_color"]
+            self.text_font_color.write(self.config_label_font_color)
+
+            self.text_texture = self.load_texture_array(
+                TEXTURE_PATH,
+                layers=TEXTURE_CHAR_MAX - TEXTURE_CHAR_MIN + 1,
+                flip=False,
+            )
+            self.text_texture.use()
+
+            char_count = np.char.str_len(self.label_data)
+            max_char_count = np.max(char_count)
+            raw_text_centered = np.char.center(self.label_data, max_char_count)
+            total_label_width = (
+                max_char_count * self.config_label_font_size * FONT_ASPECT_RATIO
+            )
+            if max_char_count == 1:
+                offset = np.zeros(1, dtype=np.float32)
+            else:
+                offset = np.linspace(
+                    -total_label_width / 2.0, total_label_width / 2.0, max_char_count
+                )
+
+            lookup = np.arange(TEXTURE_CHAR_MAX + 1, dtype=np.uint32)
+            text = lookup[raw_text_centered.view(np.int32)].reshape(
+                (self.node_layout.shape[0], max_char_count)
+            )
+
+            offsets = np.lib.stride_tricks.as_strided(
+                offset,
+                (self.node_layout.shape[0],) + offset.shape,
+                (0,) + offset.strides,
+            ).flatten()
+            positions = np.repeat(self.node_layout, repeats=max_char_count, axis=0)
+
+            label_buffer_data = (
+                np.stack(
+                    (positions[:, 0] + offsets, positions[:, 1], text[text != 0]),
+                    axis=-1,
+                )
+                .astype(np.float32)
+                .flatten()
+            )
+
+            self.text_vbo = self.ctx.buffer(label_buffer_data)
+            self.text_vao = self.ctx.simple_vertex_array(
+                self.text_program,
+                self.text_vbo,
+                "in_vert",
+                "in_char",
+            )
+
     @classmethod
     def add_arguments(cls, parser):
         parser.add_argument(
@@ -197,6 +299,12 @@ class GraphWindow(mglw.WindowConfig):
             "--weight-data",
             type=str,
             help="Pass the weight data file (.npy) by path.",
+        )
+
+        parser.add_argument(
+            "--label-data",
+            type=str,
+            help="Pass the label data file (.npy) by path.",
         )
 
         parser.add_argument(
@@ -223,10 +331,15 @@ class GraphWindow(mglw.WindowConfig):
             blue=self.config_background_color[2] / 255,
             alpha=self.config_background_color[3] / 255,
         )
+        self.ctx.enable(moderngl.BLEND)
+
         if self.has_edges:
             self.edge_vao.render(moderngl.LINES)
 
         self.node_vao.render(moderngl.POINTS)
+
+        if self.config_has_labels:
+            self.text_vao.render(moderngl.POINTS)
 
         if self.save_path is not None:
             image = Image.frombytes(

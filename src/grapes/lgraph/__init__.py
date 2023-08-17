@@ -5,6 +5,7 @@ __all__ = [
     "BLACK",
     "WHITE",
     "TABLEAU_BLUE",
+    "TABLEAU_ORANGE",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
@@ -18,6 +19,7 @@ from .wrapper import (
     BLACK,
     WHITE,
     TABLEAU_BLUE,
+    TABLEAU_ORANGE,
 )
 from .errors import (
     GraphMissingNodeError,
