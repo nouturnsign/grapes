@@ -221,6 +221,48 @@ class GraphWindow(mglw.WindowConfig):
             TEXTURE_CHAR_MIN = 32
             TEXTURE_CHAR_MAX = 126
 
+            # check this first to raise errors earlier
+            char_count = np.char.str_len(self.label_data)
+            max_char_count = np.max(char_count)
+            raw_text_centered = np.char.center(self.label_data, max_char_count)
+
+            lookup = np.arange(TEXTURE_CHAR_MAX + 1, dtype=np.uint32)
+            raw_text_int = raw_text_centered.view(np.int32)
+            if (
+                np.min(raw_text_int) < TEXTURE_CHAR_MIN
+                or np.max(raw_text_int) > TEXTURE_CHAR_MAX
+            ):
+                raise ValueError(
+                    f"Label contains unsupported characters. Characters should have unicode values between {TEXTURE_CHAR_MIN} and {TEXTURE_CHAR_MAX}"
+                )
+            text = lookup[raw_text_centered.view(np.int32)]
+
+            total_label_width = (
+                max_char_count * self.config_label_font_size * FONT_ASPECT_RATIO
+            )
+            if max_char_count == 1:
+                offset = np.zeros(1, dtype=np.float32)
+            else:
+                offset = np.linspace(
+                    -total_label_width / 2.0, total_label_width / 2.0, max_char_count
+                )
+
+            offsets = np.lib.stride_tricks.as_strided(
+                offset,
+                (self.node_layout.shape[0],) + offset.shape,
+                (0,) + offset.strides,
+            ).flatten()
+            positions = np.repeat(self.node_layout, repeats=max_char_count, axis=0)
+
+            label_buffer_data = (
+                np.stack(
+                    (positions[:, 0] + offsets, positions[:, 1], text),
+                    axis=-1,
+                )
+                .astype(np.float32)
+                .flatten()
+            )
+
             self.text_mvp = self.text_program["mvp"]
             self.text_mvp.write(self.camera)
             self.text_font_size_px = self.text_program["font_size_px"]
@@ -238,40 +280,6 @@ class GraphWindow(mglw.WindowConfig):
                 flip=False,
             )
             self.text_texture.use()
-
-            char_count = np.char.str_len(self.label_data)
-            max_char_count = np.max(char_count)
-            raw_text_centered = np.char.center(self.label_data, max_char_count)
-            total_label_width = (
-                max_char_count * self.config_label_font_size * FONT_ASPECT_RATIO
-            )
-            if max_char_count == 1:
-                offset = np.zeros(1, dtype=np.float32)
-            else:
-                offset = np.linspace(
-                    -total_label_width / 2.0, total_label_width / 2.0, max_char_count
-                )
-
-            lookup = np.arange(TEXTURE_CHAR_MAX + 1, dtype=np.uint32)
-            text = lookup[raw_text_centered.view(np.int32)].reshape(
-                (self.node_layout.shape[0], max_char_count)
-            )
-
-            offsets = np.lib.stride_tricks.as_strided(
-                offset,
-                (self.node_layout.shape[0],) + offset.shape,
-                (0,) + offset.strides,
-            ).flatten()
-            positions = np.repeat(self.node_layout, repeats=max_char_count, axis=0)
-
-            label_buffer_data = (
-                np.stack(
-                    (positions[:, 0] + offsets, positions[:, 1], text[text != 0]),
-                    axis=-1,
-                )
-                .astype(np.float32)
-                .flatten()
-            )
 
             self.text_vbo = self.ctx.buffer(label_buffer_data)
             self.text_vao = self.ctx.simple_vertex_array(

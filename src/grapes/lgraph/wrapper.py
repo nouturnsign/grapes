@@ -325,6 +325,13 @@ class LabeledGraph:
         :param edge_color: Color of an edge specified in RGBA (0-255), defaults
             to :const:`grapes.BLACK`
         :type edge_color: tuple[int, int, int, int]
+        :param has_labels: Whether or not to include labels, defaults to True
+        :type has_labels: bool
+        :param label_font_size: Size of the font in pixels
+        :type label_font_size: float
+        :param label_font_color: Color of a label's font specified in RGBA
+            (0-255), defaults to :const:`grapes.BLACK`
+        :type label_font_color: tuple[int, int, int, int]
 
         .. note::
             Currently, exceptions are undocumented.
