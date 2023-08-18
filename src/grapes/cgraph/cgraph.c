@@ -202,7 +202,7 @@ static PyMethodDef Multigraph_methods[] = {
     {"add_edge", (PyCFunction) Multigraph_add_edge,
      METH_VARARGS | METH_KEYWORDS,
      "Add an undirected edge to the graph given existing nodes."},
-    {"dijkstra_path", (PyCFunction) Multigraph_dijkstra_path,
+    {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS,
      "Find the shortest path between two nodes using Dijkstra's algorithm"},
     {"get_component_sizes", (PyCFunction) Multigraph_get_component_sizes,
@@ -426,14 +426,32 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
 }
 
 static PyObject *
-Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
-                         PyObject *kwds)
+Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"src", "dst", NULL};
-    Py_ssize_t   src, dst;
+    static char *kwlist[] = {"srcs", "dst", NULL};
+    PyObject    *srcs_list;
+    Py_ssize_t   dst;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn", kwlist, &src, &dst)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "On", kwlist, &srcs_list,
+                                     &dst)) {
         return NULL;
+    }
+
+    Py_ssize_t  src_count = PyList_Size(srcs_list);
+    Py_ssize_t *srcs = malloc(sizeof(*srcs) * src_count);
+    if (srcs == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc srcs at memory address %p",
+                     (void *) srcs);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < src_count; ++i) {
+        PyObject *src = PyList_GetItem(srcs_list, i);
+        if (src == NULL) {
+            free(srcs);
+            return NULL;
+        }
+        srcs[i] = PyLong_AsSsize_t(src);
     }
 
     double *dist = malloc(sizeof(*dist) * self->node_count);
@@ -441,6 +459,7 @@ Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc dist at memory address %p",
                      (void *) dist);
+        free(srcs);
         return NULL;
     }
 
@@ -449,52 +468,41 @@ Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc prev at memory address %p",
                      (void *) prev);
+        free(srcs);
         free(dist);
         return NULL;
     }
 
-    visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count, src,
-                   self->weight, dist, prev);
+    visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count,
+                   srcs, src_count, self->weight, dist, prev);
+    free(srcs);
     if (PyErr_Occurred()) {
         free(dist);
         free(prev);
         return NULL;
     }
 
-    PyObject *path = PyList_New(0);
-    if (path == NULL) {
-        PyErr_SetString(PyExc_MemoryError, "Unable to initialize path");
-    }
-    if (prev[dst] == self->node_count) {
-        free(dist);
-        free(prev);
-        return path;
-    }
-
-    if (PyList_Append(path, PyLong_FromSsize_t(dst)) == -1) {
+    PyObject *dist_list = PyList_New(self->node_count);
+    if (dist_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
         free(dist);
         free(prev);
         return NULL;
     }
-    Py_ssize_t curr = dst;
-    do {
-        curr = prev[curr];
-        if (PyList_Append(path, PyLong_FromSsize_t(curr)) == -1) {
-            free(dist);
-            free(prev);
-            return NULL;
-        }
-    } while (curr != src);
-
-    if (PyList_Reverse(path) == -1) {
+    PyObject *prev_list = PyList_New(self->node_count);
+    if (prev_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
         free(dist);
         free(prev);
         return NULL;
     }
 
-    free(dist);
-    free(prev);
-    return path;
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyList_SET_ITEM(dist_list, i, PyFloat_FromDouble(dist[i]));
+        PyList_SET_ITEM(prev_list, i, PyLong_FromSsize_t(prev[i]));
+    }
+
+    return Py_BuildValue("(OO)", dist_list, prev_list);
 }
 
 static PyObject *

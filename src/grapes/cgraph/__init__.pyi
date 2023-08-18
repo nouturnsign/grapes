@@ -74,16 +74,15 @@ class Multigraph:
         :param weight: weight of edge, defaults to 1.0
         :type weight: float
         """
-    def dijkstra_path(self: Self, src: int, dst: int) -> list[int]:
+    def dijkstra(self: Self, srcs: list[int], dst: int) -> tuple[list[int], list[int]]:
         """Get the shortest path in the graph using Dijkstra's algorithm.
 
-        :param src: Begin (source) node
-        :type src: int
+        :param srcs: Begin (source) nodes
+        :type srcs: list[int]
         :param dst: End (destination) node
         :type dst: int
-        :return: List of nodes, starting from `src` and ending with `dst`.
-            Returns an empty list if no path found.
-        :rtype: list[int]
+        :return: Lists of nodes, containing the distances and predecessors.
+        :rtype: tuple[list[int], list[int]]
         """
     def get_component_sizes(self: Self) -> list[int]:
         """Return the sizes of the (connected) components in the graph.

@@ -30,8 +30,8 @@ static PyObject *Multigraph_add_node(MultigraphObject *self,
                                      PyObject         *Py_UNUSED(ignored));
 static PyObject *Multigraph_add_edge(MultigraphObject *self, PyObject *args,
                                      PyObject *kwds);
-static PyObject *Multigraph_dijkstra_path(MultigraphObject *self,
-                                          PyObject *args, PyObject *kwds);
+static PyObject *Multigraph_dijkstra(MultigraphObject *self, PyObject *args,
+                                     PyObject *kwds);
 static PyObject *Multigraph_get_component_sizes(MultigraphObject *self,
                                                 PyObject *Py_UNUSED(ignored));
 static PyObject *Multigraph_is_bipartite(MultigraphObject *self,

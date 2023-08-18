@@ -229,7 +229,16 @@ class LabeledGraph:
                 algorithm = ShortestPathAlgorithm.DIJKSTRAS
 
         if algorithm == ShortestPathAlgorithm.DIJKSTRAS:
-            path = self.underlying_graph.dijkstra_path(src, dst)
+            _, prev = self.underlying_graph.dijkstra([src], dst)
+            if prev[dst] == self.underlying_graph.get_node_count():
+                path = []
+            else:
+                path = [dst]
+                curr = dst
+                while curr != prev[curr]:
+                    curr = prev[curr]
+                    path.append(curr)
+                path.reverse()
         else:
             raise NotImplementedError(f"{algorithm} not implemented.")
         return [self.label_data.inverse[node] for node in path]
