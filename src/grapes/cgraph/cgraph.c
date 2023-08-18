@@ -204,6 +204,8 @@ static PyMethodDef Multigraph_methods[] = {
      "Add an undirected edge to the graph given existing nodes."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
+    {"floyd_warshall", (PyCFunction) Multigraph_floyd_warshall, METH_NOARGS,
+     "Floyd-Warshall algorithm."},
     {"get_component_sizes", (PyCFunction) Multigraph_get_component_sizes,
      METH_NOARGS, "Return the sizes of the components in the graph."},
     {"is_bipartite", (PyCFunction) Multigraph_is_bipartite, METH_NOARGS,
@@ -501,6 +503,191 @@ Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
         PyList_SET_ITEM(prev_list, i, PyLong_FromSsize_t(prev[i]));
     }
 
+    return Py_BuildValue("(OO)", dist_list, prev_list);
+}
+
+static PyObject *
+Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
+{
+    double **dist = malloc(sizeof(*dist) * self->node_count);
+    if (dist == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc dist at memory address %p",
+                     (void *) dist);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        dist[i] = NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        dist[i] = malloc(sizeof(*dist[i]) * self->node_count);
+        if (dist[i] == NULL) {
+            PyErr_Format(PyExc_MemoryError,
+                         "Unable to malloc dist[i] at memory address %p",
+                         (void *) dist[i]);
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(dist[u]);
+                dist[u] = NULL;
+            }
+            free(dist);
+            return NULL;
+        }
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            dist[i][j] = INFINITY;
+        }
+    }
+
+    Py_ssize_t **prev = malloc(sizeof(*prev) * self->node_count);
+    if (prev == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc prev at memory address %p",
+                     (void *) prev);
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(dist[u]);
+            dist[u] = NULL;
+        }
+        free(dist);
+        dist = NULL;
+        return NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        prev[i] = NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        prev[i] = malloc(sizeof(*prev[i]) * self->node_count);
+        if (prev[i] == NULL) {
+            PyErr_Format(PyExc_MemoryError,
+                         "Unable to malloc prev[i] at memory address %p",
+                         (void *) prev[i]);
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(dist[u]);
+                dist[u] = NULL;
+            }
+            free(dist);
+            dist = NULL;
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(prev[u]);
+                prev[u] = NULL;
+            }
+            free(prev);
+            prev = NULL;
+
+            return NULL;
+        }
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            prev[i][j] = self->node_count;
+        }
+    }
+
+    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+        dist[u][u] = 0;
+        prev[u][u] = u;
+        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
+            Py_ssize_t v = self->adj_list[u][j];
+            dist[u][v] = self->weight[u][j];
+            prev[u][v] = u;
+        }
+    }
+
+    for (Py_ssize_t k = 0; k < self->node_count; ++k) {
+        for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+            for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+                if (dist[i][j] > dist[i][k] + dist[k][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                    prev[i][j] = prev[k][j];
+                }
+            }
+        }
+    }
+
+    PyObject *dist_list = PyList_New(self->node_count);
+    if (dist_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(dist[u]);
+            dist[u] = NULL;
+        }
+        free(dist);
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(prev[u]);
+            prev[u] = NULL;
+        }
+        free(prev);
+        return NULL;
+    }
+
+    PyObject *prev_list = PyList_New(self->node_count);
+    if (prev_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(dist[u]);
+            dist[u] = NULL;
+        }
+        free(dist);
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(prev[u]);
+            prev[u] = NULL;
+        }
+        free(prev);
+        return NULL;
+        return NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyObject *dist_row = PyList_New(self->node_count);
+        if (dist_row == NULL) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Unable to initialize dist_row");
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(dist[u]);
+                dist[u] = NULL;
+            }
+            free(dist);
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(prev[u]);
+                prev[u] = NULL;
+            }
+            free(prev);
+            return NULL;
+        }
+        PyObject *prev_row = PyList_New(self->node_count);
+        if (prev_row == NULL) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Unable to initialize prev_row");
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(dist[u]);
+                dist[u] = NULL;
+            }
+            free(dist);
+            for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+                free(prev[u]);
+                prev[u] = NULL;
+            }
+            free(prev);
+            return NULL;
+        }
+
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            PyList_SET_ITEM(dist_row, j, PyFloat_FromDouble(dist[i][j]));
+            PyList_SET_ITEM(prev_row, j, PyLong_FromSsize_t(prev[i][j]));
+        }
+        PyList_SET_ITEM(dist_list, i, dist_row);
+        PyList_SET_ITEM(prev_list, i, prev_row);
+    }
+
+    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+        free(dist[u]);
+        dist[u] = NULL;
+        free(prev[u]);
+        prev[u] = NULL;
+    }
+    free(dist);
+    dist = NULL;
+    free(prev);
+    prev = NULL;
     return Py_BuildValue("(OO)", dist_list, prev_list);
 }
 

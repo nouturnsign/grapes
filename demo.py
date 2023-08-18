@@ -1,40 +1,39 @@
+import numpy as np
+
 import grapes
 
 g = grapes.LabeledGraph(is_directed=True)
-g.add_node("Alice")
-g.add_node("Bob")
-g.add_node("Carol")
-g.add_node("Dave")
-g.add_node("E")
-g.add_node("F")
-g.add_node("G")
-g.add_node("H")
+g.add_node("1")
+g.add_node("2")
+g.add_node("3")
+g.add_node("4")
 
-g.add_edge("Alice", "Bob", weight=7)
-g.add_edge("Alice", "Carol", weight=9)
-g.add_edge("Alice", "F", weight=14)
-g.add_edge("Bob", "Carol", weight=10)
-g.add_edge("Bob", "Dave", weight=15)
-g.add_edge("Carol", "Dave", weight=11)
-g.add_edge("Carol", "F", weight=2)
-g.add_edge("Dave", "E", weight=6)
-g.add_edge("E", "F", weight=9)
-g.add_edge("G", "H", weight=1)
+g.add_edge("1", "3", weight=-2)
+g.add_edge("2", "1", weight=4)
+g.add_edge("2", "3", weight=3)
+g.add_edge("3", "4", weight=2)
+g.add_edge("4", "2", weight=-1)
 
 print(g.nodes)
 print(g.edges)
-print(g.shortest_path("Alice", "E"))
-print(g.shortest_path("G", "H"))
-print(g.shortest_path("Alice", "G"))
+print(g.shortest_path("4", "3"))
+print(g.shortest_path("2", "3"))
+print(g.shortest_path("2", "4"))
 print(g.is_connected())
 print(g.get_component_sizes())
 print(g.is_bipartite())
 g.draw(
-    g.compute_circular_layout(),
+    np.array(
+        [[0.0, 100.0], [-100.0, 0.0], [100.0, 0.0], [0.0, -100.0]], dtype=np.float32
+    ),
     background_color=grapes.colors.BLACK,
+    node_radius=20.0,
     node_fill_color=grapes.colors.WHITE,
+    edge_segment_width=1.0,
+    edge_arrowhead_height=15.0,
+    edge_arrowhead_width=5.0,
     edge_color=grapes.colors.WHITE,
     has_labels=True,
-    label_font_size=50.0,
-    label_font_color=grapes.colors.TABLEAU_ORANGE,
+    label_font_size=30.0,
+    label_font_color=grapes.colors.BLACK,
 )

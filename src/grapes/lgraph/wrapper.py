@@ -31,6 +31,8 @@ class ShortestPathAlgorithm(Enum):
 
     DIJKSTRAS = auto()
     """ShortestPathAlgorithm: Dijkstra's algorithm."""
+    FLOYD_WARSHALL = auto()
+    """ShortestPathAlgorithm: Floyd-Warshall algorithm."""
     AUTO = auto()
     """ShortestPathAlgorithm: Automatically choose an algorithm based on 
     preconditions and heuristics.
@@ -222,9 +224,7 @@ class LabeledGraph:
 
         if algorithm == ShortestPathAlgorithm.AUTO:
             if self._has_negative_weight:
-                raise NotImplementedError(
-                    "Negative weight shortest path algorithm not implemented."
-                )
+                algorithm = ShortestPathAlgorithm.FLOYD_WARSHALL
             else:
                 algorithm = ShortestPathAlgorithm.DIJKSTRAS
 
@@ -239,8 +239,19 @@ class LabeledGraph:
                     curr = prev[curr]
                     path.append(curr)
                 path.reverse()
+        elif algorithm == ShortestPathAlgorithm.FLOYD_WARSHALL:
+            _, prev = self.underlying_graph.floyd_warshall()
+            if prev[src][dst] == self.underlying_graph.get_node_count():
+                path = []
+            else:
+                path = [dst]
+                curr = dst
+                while curr != src:
+                    curr = prev[src][curr]
+                    path.append(curr)
+                path.reverse()
         else:
-            raise NotImplementedError(f"{algorithm} not implemented.")
+            raise ValueError(f"Invalid {algorithm=}.")
         return [self.label_data.inverse[node] for node in path]
 
     def get_component_sizes(self: Self) -> list[int]:

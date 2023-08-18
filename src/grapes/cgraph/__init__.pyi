@@ -84,6 +84,13 @@ class Multigraph:
         :return: Lists of nodes, containing the distances and predecessors.
         :rtype: tuple[list[int], list[int]]
         """
+    def floyd_warshall(self: Self) -> tuple[list[list[int]], list[list[int]]]:
+        """Floyd-Warshall algorithm.
+
+        :return: Lists of lists of nodes, containing the distances and
+            predecessors.
+        :rtype: tuple[list[list[int]], list[list[int]]]
+        """
     def get_component_sizes(self: Self) -> list[int]:
         """Return the sizes of the (connected) components in the graph.
 
