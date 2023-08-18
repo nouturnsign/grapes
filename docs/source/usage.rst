@@ -21,16 +21,6 @@ Then, it can be imported.
 Examples
 --------
 
-* Undirected graph with n nodes
-
-   .. code-block:: python
-
-      import grapes
-
-      n = 10
-      g = grapes.Multigraph(False, n)
-      print(g.get_node_count())
-
 * Shortest path
 
    .. code-block:: python
@@ -61,3 +51,38 @@ Examples
       print(g.shortest_path("A", "E"))
       print(g.shortest_path("G", "H"))
       print(g.shortest_path("A", "G"))
+
+* Draw a graph
+
+   .. code-block:: python
+      import numpy as np
+
+      import grapes
+
+      g = grapes.LabeledGraph(is_directed=True)
+      g.add_node("1")
+      g.add_node("2")
+      g.add_node("3")
+      g.add_node("4")
+
+      g.add_edge("1", "3")
+      g.add_edge("2", "1")
+      g.add_edge("2", "3")
+      g.add_edge("3", "4")
+      g.add_edge("4", "2")
+
+      g.draw(
+         np.array(
+            [[0.0, 100.0], [-100.0, 0.0], [100.0, 0.0], [0.0, -100.0]], dtype=np.float32
+         ),
+         background_color=grapes.colors.BLACK,
+         node_radius=20.0,
+         node_fill_color=grapes.colors.WHITE,
+         edge_segment_width=1.0,
+         edge_arrowhead_height=15.0,
+         edge_arrowhead_width=5.0,
+         edge_color=grapes.colors.WHITE,
+         has_labels=True,
+         label_font_size=30.0,
+         label_font_color=grapes.colors.BLACK,
+      )
