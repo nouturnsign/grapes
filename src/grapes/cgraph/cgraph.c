@@ -3,6 +3,8 @@
 
 #include "cgraph.h"
 
+#include <numpy/arrayobject.h>
+
 #include "deque.h"
 #include "heap.h"
 #include "macros.h"
@@ -21,6 +23,10 @@ PyInit_cgraph(void)
         return NULL;
     }
 
+    import_array();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
     Py_INCREF(&MultigraphType);
     if (PyModule_AddObject(m, "Multigraph", (PyObject *) &MultigraphType) <
         0) {
@@ -35,7 +41,8 @@ PyInit_cgraph(void)
 static struct PyModuleDef cgraphmodule = {
     PyModuleDef_HEAD_INIT,
     .m_name = "cgraph",
-    .m_doc = PyDoc_STR("Grapes core functionality written in C"),
+    .m_doc = PyDoc_STR("Contains the Multigraph class, implementing "
+                       "algorithms and data structures in C."),
     .m_size = -1,
 };
 
@@ -188,18 +195,24 @@ static PyMethodDef Multigraph_methods[] = {
      "Return the number of edges in the graph."},
     {"get_edges", (PyCFunction) Multigraph_get_edges, METH_NOARGS,
      "Return the edges in the graph."},
+    {"get_weights", (PyCFunction) Multigraph_get_weights, METH_NOARGS,
+     "Get the weights in the graph."},
     {"add_node", (PyCFunction) Multigraph_add_node, METH_NOARGS,
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Multigraph_add_edge,
      METH_VARARGS | METH_KEYWORDS,
      "Add an undirected edge to the graph given existing nodes."},
-    {"dijkstra_path", (PyCFunction) Multigraph_dijkstra_path,
-     METH_VARARGS | METH_KEYWORDS,
-     "Find the shortest path between two nodes using Dijkstra's algorithm"},
+    {"dijkstra", (PyCFunction) Multigraph_dijkstra,
+     METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
+    {"floyd_warshall", (PyCFunction) Multigraph_floyd_warshall, METH_NOARGS,
+     "Floyd-Warshall algorithm."},
     {"get_component_sizes", (PyCFunction) Multigraph_get_component_sizes,
      METH_NOARGS, "Return the sizes of the components in the graph."},
     {"is_bipartite", (PyCFunction) Multigraph_is_bipartite, METH_NOARGS,
      "Return whether the graph is bipartite or not."},
+    {"compute_circular_layout",
+     (PyCFunction) Multigraph_compute_circular_layout,
+     METH_VARARGS | METH_KEYWORDS, "Compute a circular layout for the graph."},
     {NULL}};
 
 static PyObject *
@@ -244,6 +257,39 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         }
     }
     return edges;
+}
+
+static PyObject *
+Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
+{
+    PyObject *weights = PyList_New(self->edge_count);
+    if (weights == NULL) {
+        PyErr_SetString(PyExc_MemoryError,
+                        "Unable to initialize weights list");
+    }
+
+    Py_ssize_t i = 0;
+    PyObject  *weight;
+    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
+            Py_ssize_t v = self->adj_list[u][j];
+            if (!self->is_directed && u > v) {
+                continue;
+            }
+            double w = self->weight[u][j];
+            weight = PyFloat_FromDouble(w);
+            if (weight == NULL) {
+                PyErr_Format(PyExc_TypeError,
+                             "Unable to format weight given w=%f", w);
+                return NULL;
+            }
+            if (PyList_SetItem(weights, i, weight) == -1) {
+                return NULL;
+            }
+            ++i;
+        }
+    }
+    return weights;
 }
 
 static PyObject *
@@ -381,95 +427,235 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
 }
 
 static PyObject *
-Multigraph_dijkstra_path(MultigraphObject *self, PyObject *args,
-                         PyObject *kwds)
+Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"src", "dst", NULL};
-    Py_ssize_t   src, dst;
+    PyObject   *retvalue = NULL;
+    Py_ssize_t *srcs = NULL;
+    double     *dist = NULL;
+    Py_ssize_t *prev = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn", kwlist, &src, &dst)) {
-        return NULL;
+    static char *kwlist[] = {"srcs", "dst", NULL};
+    PyObject    *srcs_list;
+    Py_ssize_t   dst;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "On", kwlist, &srcs_list,
+                                     &dst)) {
+        goto err;
     }
 
-    double *dist = malloc(sizeof(*dist) * self->node_count);
+    Py_ssize_t src_count = PyList_Size(srcs_list);
+    srcs = malloc(sizeof(*srcs) * src_count);
+    if (srcs == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc srcs at memory address %p",
+                     (void *) srcs);
+        goto err;
+    }
+    for (Py_ssize_t i = 0; i < src_count; ++i) {
+        PyObject *src = PyList_GetItem(srcs_list, i);
+        if (src == NULL) {
+            goto err;
+        }
+        srcs[i] = PyLong_AsSsize_t(src);
+    }
+
+    dist = malloc(sizeof(*dist) * self->node_count);
     if (dist == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc dist at memory address %p",
                      (void *) dist);
-        return NULL;
+        goto err;
     }
 
-    Py_ssize_t *prev = malloc(sizeof(*prev) * self->node_count);
+    prev = malloc(sizeof(*prev) * self->node_count);
     if (prev == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc prev at memory address %p",
                      (void *) prev);
-        free(dist);
-        return NULL;
+        goto err;
     }
 
-    visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count, src,
-                   self->weight, dist, prev);
-    if (PyErr_Occurred() != NULL) {
-        free(dist);
-        free(prev);
-        return NULL;
+    visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count,
+                   srcs, src_count, self->weight, dist, prev);
+    if (PyErr_Occurred()) {
+        goto err;
+    }
+    free(srcs);
+    srcs = NULL;
+
+    PyObject *dist_list = PyList_New(self->node_count);
+    if (dist_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
+        goto err;
+    }
+    PyObject *prev_list = PyList_New(self->node_count);
+    if (prev_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
+        goto err;
     }
 
-    PyObject *path = PyList_New(0);
-    if (path == NULL) {
-        PyErr_SetString(PyExc_MemoryError, "Unable to initialize path");
-    }
-    if (prev[dst] == self->node_count) {
-        free(dist);
-        free(prev);
-        return path;
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyList_SET_ITEM(dist_list, i, PyFloat_FromDouble(dist[i]));
+        PyList_SET_ITEM(prev_list, i, PyLong_FromSsize_t(prev[i]));
     }
 
-    if (PyList_Append(path, PyLong_FromSsize_t(dst)) == -1) {
-        free(dist);
-        free(prev);
-        return NULL;
-    }
-    Py_ssize_t curr = dst;
-    do {
-        curr = prev[curr];
-        if (PyList_Append(path, PyLong_FromSsize_t(curr)) == -1) {
-            free(dist);
-            free(prev);
-            return NULL;
-        }
-    } while (curr != src);
-
-    if (PyList_Reverse(path) == -1) {
-        free(dist);
-        free(prev);
-        return NULL;
-    }
-
+    retvalue = Py_BuildValue("(OO)", dist_list, prev_list);
+err:
+    free(srcs);
     free(dist);
     free(prev);
-    return path;
+    return retvalue;
 }
 
 static PyObject *
-Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
-                               PyObject *kwds)
+Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
-    Py_ssize_t *sizes = malloc(sizeof(*sizes) * self->node_count);
+    PyObject    *retvalue;
+    double     **dist = NULL;
+    Py_ssize_t **prev = NULL;
+
+    dist = malloc(sizeof(*dist) * self->node_count);
+    if (dist == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc dist at memory address %p",
+                     (void *) dist);
+        goto err;
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        dist[i] = NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        dist[i] = malloc(sizeof(*dist[i]) * self->node_count);
+        if (dist[i] == NULL) {
+            PyErr_Format(PyExc_MemoryError,
+                         "Unable to malloc dist[i] at memory address %p",
+                         (void *) dist[i]);
+            goto err;
+        }
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            dist[i][j] = INFINITY;
+        }
+    }
+
+    prev = malloc(sizeof(*prev) * self->node_count);
+    if (prev == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc prev at memory address %p",
+                     (void *) prev);
+        goto err;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        prev[i] = NULL;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        prev[i] = malloc(sizeof(*prev[i]) * self->node_count);
+        if (prev[i] == NULL) {
+            PyErr_Format(PyExc_MemoryError,
+                         "Unable to malloc prev[i] at memory address %p",
+                         (void *) prev[i]);
+            goto err;
+        }
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            prev[i][j] = self->node_count;
+        }
+    }
+
+    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+        dist[u][u] = 0;
+        prev[u][u] = u;
+        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
+            Py_ssize_t v = self->adj_list[u][j];
+            dist[u][v] = self->weight[u][j];
+            prev[u][v] = u;
+        }
+    }
+
+    for (Py_ssize_t k = 0; k < self->node_count; ++k) {
+        for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+            for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+                if (dist[i][j] > dist[i][k] + dist[k][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                    prev[i][j] = prev[k][j];
+                }
+            }
+        }
+    }
+
+    PyObject *dist_list = PyList_New(self->node_count);
+    if (dist_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
+        goto err;
+    }
+
+    PyObject *prev_list = PyList_New(self->node_count);
+    if (prev_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
+        goto err;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyObject *dist_row = PyList_New(self->node_count);
+        if (dist_row == NULL) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Unable to initialize dist_row");
+            goto err;
+        }
+        PyObject *prev_row = PyList_New(self->node_count);
+        if (prev_row == NULL) {
+            PyErr_SetString(PyExc_MemoryError,
+                            "Unable to initialize prev_row");
+            goto err;
+        }
+
+        for (Py_ssize_t j = 0; j < self->node_count; ++j) {
+            PyList_SET_ITEM(dist_row, j, PyFloat_FromDouble(dist[i][j]));
+            PyList_SET_ITEM(prev_row, j, PyLong_FromSsize_t(prev[i][j]));
+        }
+        PyList_SET_ITEM(dist_list, i, dist_row);
+        PyList_SET_ITEM(prev_list, i, prev_row);
+    }
+
+    retvalue = Py_BuildValue("(OO)", dist_list, prev_list);
+err:
+    if (*dist) {
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(dist[u]);
+        }
+    }
+    free(dist);
+    if (*prev) {
+        for (Py_ssize_t u = 0; u < self->node_count; ++u) {
+            free(prev[u]);
+        }
+    }
+    free(prev);
+    return retvalue;
+}
+
+static PyObject *
+Multigraph_get_component_sizes(MultigraphObject *self,
+                               PyObject         *Py_UNUSED(ignored))
+{
+    PyObject   *retvalue = NULL;
+    Py_ssize_t *sizes = NULL;
+    short      *visited = NULL;
+
+    sizes = malloc(sizeof(*sizes) * self->node_count);
     if (sizes == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc sizes at memory address %p",
                      (void *) sizes);
-        return NULL;
+        goto err;
     }
-    short *visited = malloc(sizeof(*visited) * self->node_count);
+    visited = malloc(sizeof(*visited) * self->node_count);
     if (visited == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc visited at memory address %p",
                      (void *) visited);
-        free(sizes);
-        return NULL;
+        goto err;
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         sizes[i] = 0;
@@ -482,10 +668,8 @@ Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
             sizes[count++] =
                 visit(self->adj_list, self->neighbor_count, i, visited);
         }
-        if (PyErr_Occurred() != NULL) {
-            free(sizes);
-            free(visited);
-            return NULL;
+        if (PyErr_Occurred()) {
+            goto err;
         }
     }
 
@@ -493,24 +677,26 @@ Multigraph_get_component_sizes(MultigraphObject *self, PyObject *args,
     if (component_sizes == NULL) {
         PyErr_SetString(PyExc_MemoryError,
                         "Unable to initialize component_sizes");
+        goto err;
     }
 
     for (Py_ssize_t i = 0; i < count; ++i) {
         if (PyList_SetItem(component_sizes, i, PyLong_FromSsize_t(sizes[i])) ==
             -1) {
-            free(sizes);
-            free(visited);
-            return NULL;
+            goto err;
         }
     }
 
+    retvalue = component_sizes;
+
+err:
     free(sizes);
     free(visited);
-    return component_sizes;
+    return retvalue;
 }
 
 static PyObject *
-Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
+Multigraph_is_bipartite(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
     short *color = malloc(sizeof(*color) * self->node_count);
     if (color == NULL) {
@@ -528,7 +714,7 @@ Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
             free(color);
             Py_RETURN_FALSE;
         }
-        if (PyErr_Occurred() != NULL) {
+        if (PyErr_Occurred()) {
             free(color);
             return NULL;
         }
@@ -536,4 +722,45 @@ Multigraph_is_bipartite(MultigraphObject *self, PyObject *args, PyObject *kwds)
 
     free(color);
     Py_RETURN_TRUE;
+}
+
+static PyObject *
+Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
+                                   PyObject *kwds)
+{
+    static char *kwlist[] = {"radius", "initial_angle", "x_center", "y_center",
+                             NULL};
+    double       radius;
+    double       initial_angle;
+    double       x_center;
+    double       y_center;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "dddd", kwlist, &radius,
+                                     &initial_angle, &x_center, &y_center)) {
+        return NULL;
+    }
+
+    npy_float32 *raw_layout =
+        malloc(sizeof(*raw_layout) * self->node_count * 2);
+    if (raw_layout == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc raw_layout at memory address %p",
+                     (void *) raw_layout);
+        return NULL;
+    }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        double theta =
+            ((double) i / self->node_count) * 2 * M_PI + initial_angle;
+        raw_layout[i * 2 + 0] = radius * cos(theta) + x_center;
+        raw_layout[i * 2 + 1] = radius * sin(theta) + y_center;
+    }
+
+    const npy_intp dims[2] = {self->node_count, 2};
+    PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_FLOAT32,
+                                                      (void *) raw_layout);
+    if (PyErr_Occurred()) {
+        free(raw_layout);
+        return NULL;
+    }
+    free(raw_layout);
+    return layout;
 }

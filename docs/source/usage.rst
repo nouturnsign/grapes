@@ -31,25 +31,33 @@ Examples
       g = grapes.Multigraph(False, n)
       print(g.get_node_count())
 
-* Dijkstra's algorithm
+* Shortest path
 
    .. code-block:: python
 
       import grapes
 
-      n = 8
-      g = grapes.Multigraph(False, n)
-      g.add_edge(0, 1, weight=7)
-      g.add_edge(0, 2, weight=9)
-      g.add_edge(0, 5, weight=14)
-      g.add_edge(1, 2, weight=10)
-      g.add_edge(1, 3, weight=15)
-      g.add_edge(2, 3, weight=11)
-      g.add_edge(2, 5, weight=2)
-      g.add_edge(3, 4, weight=6)
-      g.add_edge(4, 5, weight=9)
-      g.add_edge(6, 7, weight=1)
+      g = grapes.LabeledGraph()
+      g.add_node("A")
+      g.add_node("B")
+      g.add_node("C")
+      g.add_node("D")
+      g.add_node("E")
+      g.add_node("F")
+      g.add_node("G")
+      g.add_node("H")
 
-      print(g.dijkstra_path(0, 4))
-      print(g.dijkstra_path(6, 7))
-      print(g.dijkstra_path(0, 7))
+      g.add_edge("A", "B", weight=7)
+      g.add_edge("A", "C", weight=9)
+      g.add_edge("A", "F", weight=14)
+      g.add_edge("B", "C", weight=10)
+      g.add_edge("B", "D", weight=15)
+      g.add_edge("C", "D", weight=11)
+      g.add_edge("C", "F", weight=2)
+      g.add_edge("D", "E", weight=6)
+      g.add_edge("E", "F", weight=9)
+      g.add_edge("G", "H", weight=1)
+
+      print(g.shortest_path("A", "E"))
+      print(g.shortest_path("G", "H"))
+      print(g.shortest_path("A", "G"))

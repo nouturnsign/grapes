@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools >= 63.0.0"]
+requires = ["setuptools >= 63.0.0", "numpy >= 1.23.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "grapes-graph"
-version = "0.0.6"
+version = "0.1.0"
 description = "Python graph library written in C"
 readme = "README.md"
 requires-python = ">=3.9"

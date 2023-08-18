@@ -1,7 +1,8 @@
-"""A graph algorithms and visualization Python package."""
+"""Contains the LabeledGraph and GrapesRenderer classes, implementing graph
+visualization and providing a thin Pythonic wrapper.
+"""
 
 __all__ = [
-    "Multigraph",
     "LabeledGraph",
     "ShortestPathAlgorithm",
     "GrapesRenderer",
@@ -10,18 +11,19 @@ __all__ = [
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
     "RendererInvalidInputError",
-    "colors",
 ]
 
-from .cgraph import Multigraph
-from .lgraph import (
+from .wrapper import (
     LabeledGraph,
     ShortestPathAlgorithm,
+)
+from .renderer import (
     GrapesRenderer,
+)
+from .errors import (
     GraphMissingNodeError,
     GraphDuplicateNodeError,
     SimpleGraphWithLoopError,
     SimpleGraphWithDuplicateEdgeError,
     RendererInvalidInputError,
-    colors,
 )

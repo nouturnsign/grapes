@@ -7,13 +7,21 @@
 
 void
 visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-               Py_ssize_t node_count, Py_ssize_t src, double **weight,
-               double *dist, Py_ssize_t *prev)
+               Py_ssize_t node_count, Py_ssize_t *srcs, Py_ssize_t src_count,
+               double **weight, double *dist, Py_ssize_t *prev)
 {
-    short *visited = malloc(sizeof(*visited) * node_count);
+    short   *visited = NULL;
+    MinHeap *heap;
+
+    visited = malloc(sizeof(*visited) * node_count);
     if (visited == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate visited");
-        return;
+        goto err;
+    }
+
+    heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
+    if (PyErr_Occurred()) {
+        goto err;
     }
 
     for (Py_ssize_t i = 0; i < node_count; ++i) {
@@ -21,20 +29,18 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         visited[i] = GRAPES_FALSE;
         prev[i] = node_count;
     }
-    dist[src] = 0;
-    visited[src] = GRAPES_TRUE;
-    prev[src] = src;
 
-    MinHeap *heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
-    if (PyErr_Occurred() != NULL) {
-        free(visited);
-        return;
+    for (Py_ssize_t i = 0; i < src_count; ++i) {
+        Py_ssize_t src = srcs[i];
+        dist[src] = 0;
+        visited[src] = GRAPES_TRUE;
+        prev[src] = src;
+        MinHeap_insert(heap, src, 0);
+        if (PyErr_Occurred()) {
+            goto err;
+        }
     }
-    MinHeap_insert(heap, src, 0);
-    if (PyErr_Occurred() != NULL) {
-        free(visited);
-        return;
-    }
+
     Py_ssize_t u, v;
     double     w;
     while (!MinHeap_is_empty(heap)) {
@@ -51,17 +57,17 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                 dist[v] = dist[u] + w;
                 prev[v] = u;
                 MinHeap_insert(heap, v, dist[v]);
-                if (PyErr_Occurred() != NULL) {
-                    free(visited);
-                    MinHeap_free(heap);
-                    return;
+                if (PyErr_Occurred()) {
+                    goto err;
                 }
             }
         }
     }
 
+err:
     free(visited);
     MinHeap_free(heap);
+    return;
 }
 
 Py_ssize_t
@@ -71,11 +77,12 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     visited[src] = GRAPES_TRUE;
     Py_ssize_t size = 1;
     Deque     *queue = Deque_alloc();  // push_back, pop_front
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     Deque_push_back(queue, src);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
+        Deque_free(queue);
         return -1;
     }
     while (!Deque_is_empty(queue)) {
@@ -86,7 +93,8 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
                 visited[neighbor] = GRAPES_TRUE;
                 ++size;
                 Deque_push_back(queue, neighbor);
-                if (PyErr_Occurred() != NULL) {
+                if (PyErr_Occurred()) {
+                    Deque_free(queue);
                     return -1;
                 }
             }
@@ -105,11 +113,12 @@ visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     }
     color[src] = GRAPES_RED;
     Deque *queue = Deque_alloc();  // push_back, pop_front
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
         return -1;
     }
     Deque_push_back(queue, src);
-    if (PyErr_Occurred() != NULL) {
+    if (PyErr_Occurred()) {
+        Deque_free(queue);
         return -1;
     }
     while (!Deque_is_empty(queue)) {
@@ -120,7 +129,7 @@ visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
                 color[neighbor] =
                     (color[curr] == GRAPES_RED) ? GRAPES_BLUE : GRAPES_RED;
                 Deque_push_back(queue, neighbor);
-                if (PyErr_Occurred() != NULL) {
+                if (PyErr_Occurred()) {
                     Deque_free(queue);
                     return -1;
                 }

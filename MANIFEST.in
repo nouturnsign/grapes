@@ -1,1 +1,3 @@
 include src/grapes/cgraph/*
+include src/grapes/lgraph/shaders/*
+include src/grapes/lgraph/font/*

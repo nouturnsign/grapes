@@ -1,7 +1,14 @@
+"""Contains the Multigraph class, implementing algorithms and data structures
+in C.
+"""
+
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
+import numpy.typing as npt
+
+import numpy as np
 
 class Multigraph:
     """Underlying graph type.
@@ -42,6 +49,12 @@ class Multigraph:
         :returns: List of edges
         :rtype: list[tuple[int, int]]
         """
+    def get_weights(self: Self) -> list[float]:
+        """Get the weights in the graph.
+
+        :returns: List of weights in the same order as edges
+        :rtype: list[float]
+        """
     def add_node(self: Self) -> int:
         """Add a node to the graph.
 
@@ -61,16 +74,22 @@ class Multigraph:
         :param weight: weight of edge, defaults to 1.0
         :type weight: float
         """
-    def dijkstra_path(self: Self, src: int, dst: int) -> list[int]:
-        """Get the shortest path in the graph using Dijkstra's algorithm.
+    def dijkstra(self: Self, srcs: list[int], dst: int) -> tuple[list[int], list[int]]:
+        """Multiple source Dijkstra's algorithm.
 
-        :param src: Begin (source) node
-        :type src: int
+        :param srcs: Begin (source) nodes
+        :type srcs: list[int]
         :param dst: End (destination) node
         :type dst: int
-        :return: List of nodes, starting from `src` and ending with `dst`.
-            Returns an empty list if no path found.
-        :rtype: list[int]
+        :return: Lists of nodes, containing the distances and predecessors.
+        :rtype: tuple[list[int], list[int]]
+        """
+    def floyd_warshall(self: Self) -> tuple[list[list[int]], list[list[int]]]:
+        """Floyd-Warshall algorithm.
+
+        :return: Lists of lists of nodes, containing the distances and
+            predecessors.
+        :rtype: tuple[list[list[int]], list[list[int]]]
         """
     def get_component_sizes(self: Self) -> list[int]:
         """Return the sizes of the (connected) components in the graph.
@@ -82,4 +101,24 @@ class Multigraph:
 
         :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
+        """
+    def compute_circular_layout(
+        self: Self,
+        radius: float,
+        initial_angle: float,
+        x_center: float,
+        y_center: float,
+    ) -> npt.NDArray[np.float32]:
+        """Compute a circular layout for the graph.
+
+        :param radius: Radius of circle
+        :type radius: float
+        :param initial_angle: Initial angle in radians
+        :type initial_angle: float
+        :param x_center: x-coordinate of center of circle
+        :type x_center: float
+        :param y_center: y-coordinate of center of circle
+        :type y_center: float
+        :returns: (number of nodes) by 2 array describing 2d coordinates
+        :rtype: npt.NDArray[np.float32]
         """
