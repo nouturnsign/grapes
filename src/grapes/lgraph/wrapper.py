@@ -211,7 +211,8 @@ class LabeledGraph:
             `ShortestPathAlgorithm.AUTO`
         :type algorithm: :class:`grapes.ShortestPathAlgorithm`
         :raises GraphMissingNodeError: Graph is missing one of the nodes.
-        :raises NotImplementedError: The given algorithm is not implemented.
+        :raises AlgorithmPreconditionError: The preconditions for the given
+            algorithm have not been met.
         :return: List of nodes, starting from `src_label` and ending with
             `dst_label`. Returns an empty list if no path found.
         :rtype: list[Hashable]
