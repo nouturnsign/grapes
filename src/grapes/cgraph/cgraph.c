@@ -749,9 +749,9 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         double theta =
-            ((double) i / self->node_count) * 2 * M_PI + initial_angle;
-        raw_layout[i * 2 + 0] = radius * cos(theta) + x_center;
-        raw_layout[i * 2 + 1] = radius * sin(theta) + y_center;
+            ((double) i / self->node_count) * 2 * PI + initial_angle;
+        raw_layout[i * 2 + 0] = (npy_float32) radius * cos(theta) + x_center;
+        raw_layout[i * 2 + 1] = (npy_float32) radius * sin(theta) + y_center;
     }
 
     const npy_intp dims[2] = {self->node_count, 2};

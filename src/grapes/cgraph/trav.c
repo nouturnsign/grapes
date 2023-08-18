@@ -11,7 +11,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                double **weight, double *dist, Py_ssize_t *prev)
 {
     short   *visited = NULL;
-    MinHeap *heap;
+    MinHeap *heap = NULL;
 
     visited = malloc(sizeof(*visited) * node_count);
     if (visited == NULL) {
