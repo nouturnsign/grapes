@@ -639,20 +639,23 @@ static PyObject *
 Multigraph_get_component_sizes(MultigraphObject *self,
                                PyObject         *Py_UNUSED(ignored))
 {
-    Py_ssize_t *sizes = malloc(sizeof(*sizes) * self->node_count);
+    PyObject   *retvalue = NULL;
+    Py_ssize_t *sizes = NULL;
+    short      *visited = NULL;
+
+    sizes = malloc(sizeof(*sizes) * self->node_count);
     if (sizes == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc sizes at memory address %p",
                      (void *) sizes);
-        return NULL;
+        goto err;
     }
-    short *visited = malloc(sizeof(*visited) * self->node_count);
+    visited = malloc(sizeof(*visited) * self->node_count);
     if (visited == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc visited at memory address %p",
                      (void *) visited);
-        free(sizes);
-        return NULL;
+        goto err;
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         sizes[i] = 0;
@@ -666,9 +669,7 @@ Multigraph_get_component_sizes(MultigraphObject *self,
                 visit(self->adj_list, self->neighbor_count, i, visited);
         }
         if (PyErr_Occurred()) {
-            free(sizes);
-            free(visited);
-            return NULL;
+            goto err;
         }
     }
 
@@ -676,20 +677,22 @@ Multigraph_get_component_sizes(MultigraphObject *self,
     if (component_sizes == NULL) {
         PyErr_SetString(PyExc_MemoryError,
                         "Unable to initialize component_sizes");
+        goto err;
     }
 
     for (Py_ssize_t i = 0; i < count; ++i) {
         if (PyList_SetItem(component_sizes, i, PyLong_FromSsize_t(sizes[i])) ==
             -1) {
-            free(sizes);
-            free(visited);
-            return NULL;
+            goto err;
         }
     }
 
+    retvalue = component_sizes;
+
+err:
     free(sizes);
     free(visited);
-    return component_sizes;
+    return retvalue;
 }
 
 static PyObject *
