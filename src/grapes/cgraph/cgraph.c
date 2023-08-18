@@ -230,9 +230,13 @@ Multigraph_get_edge_count(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 static PyObject *
 Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
-    PyObject *edges = PyList_New(self->edge_count);
+    PyObject *retvalue = NULL;
+    PyObject *edges = NULL;
+
+    edges = PyList_New(self->edge_count);
     if (edges == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize edges list");
+        goto err;
     }
 
     Py_ssize_t i = 0;
@@ -248,24 +252,30 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                 PyErr_Format(PyExc_TypeError,
                              "Unable to format uv given u=%ld and v=%ld", u,
                              v);
-                return NULL;
+                goto err;
             }
-            if (PyList_SetItem(edges, i, uv) == -1) {
-                return NULL;
-            }
+            PyList_SET_ITEM(edges, i, uv);
             ++i;
         }
     }
-    return edges;
+    retvalue = edges;
+    Py_INCREF(edges);
+err:
+    Py_XDECREF(edges);
+    return retvalue;
 }
 
 static PyObject *
 Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
-    PyObject *weights = PyList_New(self->edge_count);
+    PyObject *retvalue = NULL;
+    PyObject *weights = NULL;
+
+    weights = PyList_New(self->edge_count);
     if (weights == NULL) {
         PyErr_SetString(PyExc_MemoryError,
                         "Unable to initialize weights list");
+        goto err;
     }
 
     Py_ssize_t i = 0;
@@ -281,15 +291,17 @@ Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
             if (weight == NULL) {
                 PyErr_Format(PyExc_TypeError,
                              "Unable to format weight given w=%f", w);
-                return NULL;
+                goto err;
             }
-            if (PyList_SetItem(weights, i, weight) == -1) {
-                return NULL;
-            }
+            PyList_SET_ITEM(weights, i, weight);
             ++i;
         }
     }
-    return weights;
+    retvalue = weights;
+    Py_INCREF(weights);
+err:
+    Py_DECREF(weights);
+    return retvalue;
 }
 
 static PyObject *
@@ -430,6 +442,7 @@ static PyObject *
 Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject   *retvalue = NULL;
+    PyObject   *dist_list = NULL, *prev_list = NULL;
     Py_ssize_t *srcs = NULL;
     double     *dist = NULL;
     Py_ssize_t *prev = NULL;
@@ -483,12 +496,12 @@ Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
     free(srcs);
     srcs = NULL;
 
-    PyObject *dist_list = PyList_New(self->node_count);
+    dist_list = PyList_New(self->node_count);
     if (dist_list == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
         goto err;
     }
-    PyObject *prev_list = PyList_New(self->node_count);
+    prev_list = PyList_New(self->node_count);
     if (prev_list == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
         goto err;
@@ -504,13 +517,16 @@ err:
     free(srcs);
     free(dist);
     free(prev);
+    Py_XDECREF(dist_list);
+    Py_XDECREF(prev_list);
     return retvalue;
 }
 
 static PyObject *
 Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
-    PyObject    *retvalue;
+    PyObject    *retvalue = NULL;
+    PyObject    *dist_list = NULL, *prev_list = NULL;
     double     **dist = NULL;
     Py_ssize_t **prev = NULL;
 
@@ -584,13 +600,13 @@ Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         }
     }
 
-    PyObject *dist_list = PyList_New(self->node_count);
+    dist_list = PyList_New(self->node_count);
     if (dist_list == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
         goto err;
     }
 
-    PyObject *prev_list = PyList_New(self->node_count);
+    prev_list = PyList_New(self->node_count);
     if (prev_list == NULL) {
         PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
         goto err;
@@ -632,6 +648,8 @@ err:
         }
     }
     free(prev);
+    Py_XDECREF(dist_list);
+    Py_XDECREF(prev_list);
     return retvalue;
 }
 
@@ -640,6 +658,7 @@ Multigraph_get_component_sizes(MultigraphObject *self,
                                PyObject         *Py_UNUSED(ignored))
 {
     PyObject   *retvalue = NULL;
+    PyObject   *component_sizes = NULL;
     Py_ssize_t *sizes = NULL;
     short      *visited = NULL;
 
@@ -673,7 +692,7 @@ Multigraph_get_component_sizes(MultigraphObject *self,
         }
     }
 
-    PyObject *component_sizes = PyList_New(count);
+    component_sizes = PyList_New(count);
     if (component_sizes == NULL) {
         PyErr_SetString(PyExc_MemoryError,
                         "Unable to initialize component_sizes");
@@ -681,17 +700,15 @@ Multigraph_get_component_sizes(MultigraphObject *self,
     }
 
     for (Py_ssize_t i = 0; i < count; ++i) {
-        if (PyList_SetItem(component_sizes, i, PyLong_FromSsize_t(sizes[i])) ==
-            -1) {
-            goto err;
-        }
+        PyList_SET_ITEM(component_sizes, i, PyLong_FromSsize_t(sizes[i]));
     }
 
     retvalue = component_sizes;
-
+    Py_INCREF(component_sizes);
 err:
     free(sizes);
     free(visited);
+    Py_XDECREF(component_sizes);
     return retvalue;
 }
 
