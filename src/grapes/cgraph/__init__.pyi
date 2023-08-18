@@ -75,7 +75,7 @@ class Multigraph:
         :type weight: float
         """
     def dijkstra(self: Self, srcs: list[int], dst: int) -> tuple[list[int], list[int]]:
-        """Get the shortest path in the graph using Dijkstra's algorithm.
+        """Multiple source Dijkstra's algorithm.
 
         :param srcs: Begin (source) nodes
         :type srcs: list[int]
