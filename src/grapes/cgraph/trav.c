@@ -10,16 +10,18 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                Py_ssize_t node_count, Py_ssize_t *srcs, Py_ssize_t src_count,
                double **weight, double *dist, Py_ssize_t *prev)
 {
-    short *visited = malloc(sizeof(*visited) * node_count);
+    short   *visited = NULL;
+    MinHeap *heap;
+
+    visited = malloc(sizeof(*visited) * node_count);
     if (visited == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate visited");
-        return;
+        goto err;
     }
 
-    MinHeap *heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
+    heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
     if (PyErr_Occurred()) {
-        free(visited);
-        return;
+        goto err;
     }
 
     for (Py_ssize_t i = 0; i < node_count; ++i) {
@@ -35,9 +37,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         prev[src] = src;
         MinHeap_insert(heap, src, 0);
         if (PyErr_Occurred()) {
-            free(visited);
-            MinHeap_free(heap);
-            return;
+            goto err;
         }
     }
 
@@ -58,16 +58,16 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                 prev[v] = u;
                 MinHeap_insert(heap, v, dist[v]);
                 if (PyErr_Occurred()) {
-                    free(visited);
-                    MinHeap_free(heap);
-                    return;
+                    goto err;
                 }
             }
         }
     }
 
+err:
     free(visited);
     MinHeap_free(heap);
+    return;
 }
 
 Py_ssize_t
@@ -82,6 +82,7 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     }
     Deque_push_back(queue, src);
     if (PyErr_Occurred()) {
+        Deque_free(queue);
         return -1;
     }
     while (!Deque_is_empty(queue)) {
@@ -93,6 +94,7 @@ visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
                 ++size;
                 Deque_push_back(queue, neighbor);
                 if (PyErr_Occurred()) {
+                    Deque_free(queue);
                     return -1;
                 }
             }
@@ -116,6 +118,7 @@ visit_color(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
     }
     Deque_push_back(queue, src);
     if (PyErr_Occurred()) {
+        Deque_free(queue);
         return -1;
     }
     while (!Deque_is_empty(queue)) {
