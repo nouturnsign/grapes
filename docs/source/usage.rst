@@ -55,6 +55,7 @@ Examples
 * Draw a graph
 
    .. code-block:: python
+      
       import numpy as np
 
       import grapes
