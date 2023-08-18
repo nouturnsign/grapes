@@ -54,6 +54,14 @@ class SimpleGraphWithDuplicateEdgeError(Exception):
         )
 
 
+class AlgorithmPreconditionError(Exception):
+    """Raised when a given precondition for an algorithm is not met.
+
+    :param message: Precondition.
+    :type message: str
+    """
+
+
 class RendererInvalidInputError(Exception):
     """Raised when input data to renderer is incorrectly formatted.
 
