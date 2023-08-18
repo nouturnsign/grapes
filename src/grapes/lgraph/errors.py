@@ -55,7 +55,7 @@ class SimpleGraphWithDuplicateEdgeError(Exception):
 
 
 class RendererInvalidInputError(Exception):
-    """Raised when input data ro renderer is incorrectly formatted.
+    """Raised when input data to renderer is incorrectly formatted.
 
     :param message: Message
     :type message: str
