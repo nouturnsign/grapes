@@ -29,6 +29,8 @@ def test_dijkstras_errors():
     with pytest.raises(grapes.GraphMissingNodeError):
         g.shortest_path(1, 2, grapes.ShortestPathAlgorithm.DIJKSTRAS)
     g.add_node(1)
+    with pytest.raises(grapes.GraphMissingNodeError):
+        g.shortest_path(1, 2, grapes.ShortestPathAlgorithm.DIJKSTRAS)
     g.add_node(2)
     g.add_edge(1, 2, weight=-1.0)
     with pytest.raises(grapes.AlgorithmPreconditionError):
