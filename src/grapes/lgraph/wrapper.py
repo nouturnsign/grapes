@@ -106,8 +106,9 @@ class LabeledGraph:
             if n is None:
                 raise ValueError("Only one of n or labels should be set")
             labels = list(range(n))
-        if n is not None:
-            raise ValueError("Only one of n or labels should be set")
+        else:
+            if n is not None:
+                raise ValueError("Only one of n or labels should be set")
         n = len(labels)
         underlying_graph = Multigraph(False, n)
         for u, v in itertools.combinations(range(n), 2):
