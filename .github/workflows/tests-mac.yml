@@ -1,15 +1,14 @@
-name: tests
+name: tests-mac
 
 on: [push]
 
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     strategy:
       matrix:
-        os: [macos-latest] # TODO: windows-latest, ubuntu-latest
-        arch: [x64, x86]
+        arch: [x64, arm64]
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
@@ -40,7 +39,7 @@ jobs:
       - name: Upload pytest test results
         uses: actions/upload-artifact@v3
         with:
-          name: pytest-results-${{ matrix.os }}-${{ matrix.arch }}-py${{ matrix.python-version }}
-          path: junit/test-results-${{ matrix.os }}-${{ matrix.arch }}-py${{ matrix.python-version }}.xml
+          name: pytest-results-macos-latest-${{ matrix.arch }}-py${{ matrix.python-version }}
+          path: junit/test-results-macos-latest-${{ matrix.arch }}-py${{ matrix.python-version }}.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
