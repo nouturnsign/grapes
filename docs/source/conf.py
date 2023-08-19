@@ -23,7 +23,6 @@ extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.autodoc",
     "autoapi.extension",
-    "sphinx.ext.githubpages",
 ]
 autoapi_dirs = [os.path.abspath("../../src/grapes")]
 autoapi_add_toctree_entry = False
