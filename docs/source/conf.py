@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "grapes-graph"
 copyright = "2023, Eric Wang"
 author = "Eric Wang"
-release = "0.1.1"
+release = "0.1.2"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -23,7 +23,6 @@ extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.autodoc",
     "autoapi.extension",
-    "sphinx.ext.githubpages",
 ]
 autoapi_dirs = [os.path.abspath("../../src/grapes")]
 autoapi_add_toctree_entry = False

@@ -20,6 +20,7 @@ from .errors import (
     GraphMissingNodeError,
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
+    AlgorithmPreconditionError,
 )
 from .invmap import InvertibleMapping
 from .renderer import GrapesRenderer
@@ -105,8 +106,9 @@ class LabeledGraph:
             if n is None:
                 raise ValueError("Only one of n or labels should be set")
             labels = list(range(n))
-        if n is not None:
-            raise ValueError("Only one of n or labels should be set")
+        else:
+            if n is not None:
+                raise ValueError("Only one of n or labels should be set")
         n = len(labels)
         underlying_graph = Multigraph(False, n)
         for u, v in itertools.combinations(range(n), 2):
@@ -210,7 +212,8 @@ class LabeledGraph:
             `ShortestPathAlgorithm.AUTO`
         :type algorithm: :class:`grapes.ShortestPathAlgorithm`
         :raises GraphMissingNodeError: Graph is missing one of the nodes.
-        :raises NotImplementedError: The given algorithm is not implemented.
+        :raises AlgorithmPreconditionError: The preconditions for the given
+            algorithm have not been met.
         :return: List of nodes, starting from `src_label` and ending with
             `dst_label`. Returns an empty list if no path found.
         :rtype: list[Hashable]
@@ -229,6 +232,10 @@ class LabeledGraph:
                 algorithm = ShortestPathAlgorithm.DIJKSTRAS
 
         if algorithm == ShortestPathAlgorithm.DIJKSTRAS:
+            if self._has_negative_weight:
+                raise AlgorithmPreconditionError(
+                    "Cannot perform Dijkstra's algorithm on a graph with negative weights."
+                )
             _, prev = self.underlying_graph.dijkstra([src], dst)
             if prev[dst] == self.underlying_graph.get_node_count():
                 path = []

@@ -18,7 +18,6 @@ from PIL import Image
 
 from .errors import RendererInvalidInputError
 
-Image.MAX_IMAGE_PIXELS = 95 * 1238 * 2048
 mglw.setup_basic_logging(logging.WARNING)
 
 
@@ -258,6 +257,7 @@ class GrapesRenderer(mglw.WindowConfig):
             TEXTURE_PATH = os.path.join(
                 os.path.dirname(__file__), "font", "courier-prime-32-126.png"
             )
+            TEXTURE_FILE_SIZE = 95 * 1238 * 2048
             TEXTURE_CHAR_MIN = 32
             TEXTURE_CHAR_MAX = 126
 
@@ -316,11 +316,14 @@ class GrapesRenderer(mglw.WindowConfig):
             self.text_font_color = self.text_program["font_color"]
             self.text_font_color.write(self.config_label_font_color)
 
+            _limit = Image.MAX_IMAGE_PIXELS
+            Image.MAX_IMAGE_PIXELS = TEXTURE_FILE_SIZE
             self.text_texture = self.load_texture_array(
                 TEXTURE_PATH,
                 layers=TEXTURE_CHAR_MAX - TEXTURE_CHAR_MIN + 1,
                 flip=False,
             )
+            Image.MAX_IMAGE_PIXELS = _limit
             self.text_texture.use()
 
             self.text_vbo = self.ctx.buffer(label_buffer_data)
