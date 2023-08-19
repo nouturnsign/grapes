@@ -4,8 +4,6 @@ from PIL import Image
 
 import grapes
 
-import pytest
-
 
 def test_renderer_correctness():
     g = grapes.LabeledGraph()

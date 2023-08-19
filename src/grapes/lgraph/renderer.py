@@ -72,7 +72,8 @@ class GrapesRenderer(mglw.WindowConfig):
 
         if self.node_layout.dtype != np.float32:
             raise RendererInvalidInputError(
-                f"Node layout should be of type np.float32; got {self.node_layout.dtype}"
+                "Node layout should be of type np.float32; got "
+                f"{self.node_layout.dtype}"
             )
         if self.node_layout.ndim != 2 or self.node_layout.shape[1] != 2:
             raise RendererInvalidInputError(
@@ -80,7 +81,8 @@ class GrapesRenderer(mglw.WindowConfig):
             )
         if self.node_layout.shape[0] == 0:
             raise RendererInvalidInputError(
-                f"Node layout must contain at least one node; got {self.node_layout.shape[0]}"
+                "Node layout must contain at least one node; got "
+                f"{self.node_layout.shape[0]}"
             )
         if self.has_edges:
             if self.edge_data.ndim != 2 or self.edge_data.shape[1] != 2:
@@ -110,7 +112,8 @@ class GrapesRenderer(mglw.WindowConfig):
             )
 
         mglw.logger.info(
-            f"Successfully loaded node layout, edge data, weight data, config, and save_path"
+            "Successfully loaded node layout, edge data, weight data, config, and "
+            "save_path"
         )
 
         self.node_layout_flattened = self.node_layout.flatten()
@@ -154,7 +157,7 @@ class GrapesRenderer(mglw.WindowConfig):
                 fragment_shader=node_fragment_shader.read(),
                 geometry_shader=node_geometry_shader.read(),
             )
-        mglw.logger.info(f"Successfully loaded node shaders")
+        mglw.logger.info("Successfully loaded node shaders")
         mglw.logger.info("Got the following internal members from node shaders:")
         for name in self.node_program:
             member = self.node_program[name]
@@ -169,7 +172,7 @@ class GrapesRenderer(mglw.WindowConfig):
                 fragment_shader=edge_fragment_shader.read(),
                 geometry_shader=edge_geometry_shader.read(),
             )
-        mglw.logger.info(f"Successfully loaded edge shaders")
+        mglw.logger.info("Successfully loaded edge shaders")
         mglw.logger.info("Got the following internal members from edge shaders:")
         for name in self.edge_program:
             member = self.edge_program[name]
@@ -184,7 +187,7 @@ class GrapesRenderer(mglw.WindowConfig):
                 fragment_shader=text_fragment_shader.read(),
                 geometry_shader=text_geometry_shader.read(),
             )
-        mglw.logger.info(f"Successfully loaded text shaders")
+        mglw.logger.info("Successfully loaded text shaders")
         mglw.logger.info("Got the following internal members from text shaders:")
         for name in self.text_program:
             member = self.text_program[name]
@@ -286,7 +289,9 @@ class GrapesRenderer(mglw.WindowConfig):
                 offset = np.zeros(1, dtype=np.float32)
             else:
                 offset = np.linspace(
-                    -total_label_width / 2.0, total_label_width / 2.0, max_char_count
+                    -total_label_width / 2.0,
+                    total_label_width / 2.0,
+                    max_char_count,
                 )
 
             offsets = np.lib.stride_tricks.as_strided(

@@ -234,7 +234,8 @@ class LabeledGraph:
         if algorithm == ShortestPathAlgorithm.DIJKSTRAS:
             if self._has_negative_weight:
                 raise AlgorithmPreconditionError(
-                    "Cannot perform Dijkstra's algorithm on a graph with negative weights."
+                    "Cannot perform Dijkstra's algorithm on a graph with negative "
+                    "weights."
                 )
             _, prev = self.underlying_graph.dijkstra([src], dst)
             if prev[dst] == self.underlying_graph.get_node_count():
