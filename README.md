@@ -1,4 +1,8 @@
 # Grapes
+<img src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo.svg" alt="Grapes logo" height="200">
+
+---
+
 Python graph library written in C
 
 [![pypi](https://img.shields.io/pypi/v/grapes-graph.svg?style=flat&logo=pypi)](https://pypi.org/project/grapes-graph/)
