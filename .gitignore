@@ -1,5 +1,7 @@
 # Temporary
 sandbox/
+lcov/
+lcov.txt
 
 # Project-specific
 venv3.9/

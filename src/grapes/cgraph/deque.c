@@ -31,6 +31,10 @@ Deque_alloc()
 void
 Deque_free(Deque *deque)
 {
+    if (deque == NULL) {
+        return;
+    }
+
     DequeNode *curr = deque->head;
     DequeNode *next;
     while (curr != NULL) {
@@ -39,7 +43,6 @@ Deque_free(Deque *deque)
         curr = next;
     }
     free(deque);
-    deque = NULL;
 }
 
 void

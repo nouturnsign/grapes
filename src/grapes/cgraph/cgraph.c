@@ -80,20 +80,14 @@ Multigraph_dealloc(MultigraphObject *self)
 {
     for (Py_ssize_t i = 0; i < self->max_node_count; ++i) {
         free(self->adj_list[i]);
-        self->adj_list[i] = NULL;
     }
     for (Py_ssize_t i = 0; i < self->max_node_count; ++i) {
         free(self->weight[i]);
-        self->weight[i] = NULL;
     }
     free(self->adj_list);
-    self->adj_list = NULL;
     free(self->neighbor_count);
-    self->neighbor_count = NULL;
     free(self->max_neighbor_count);
-    self->max_neighbor_count = NULL;
     free(self->weight);
-    self->weight = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -300,7 +294,7 @@ Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
     retvalue = weights;
     Py_INCREF(weights);
 err:
-    Py_DECREF(weights);
+    Py_XDECREF(weights);
     return retvalue;
 }
 
@@ -636,15 +630,19 @@ Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 
     retvalue = Py_BuildValue("(OO)", dist_list, prev_list);
 err:
-    if (*dist) {
+    if (dist) {
         for (Py_ssize_t u = 0; u < self->node_count; ++u) {
-            free(dist[u]);
+            if (dist[u]) {
+                free(dist[u]);
+            }
         }
     }
     free(dist);
-    if (*prev) {
+    if (prev) {
         for (Py_ssize_t u = 0; u < self->node_count; ++u) {
-            free(prev[u]);
+            if (prev[u]) {
+                free(prev[u]);
+            }
         }
     }
     free(prev);
