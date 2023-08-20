@@ -1,14 +1,15 @@
 # Grapes
 <p align="center">
-    <a href="grapes-graph.readthedocs.io/"><img src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo.svg" alt="Grapes logo" height="200"></a>
+    <a href="grapes-graph.readthedocs.io/"><img src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-dark.svg" alt="Grapes logo" height="200"></a>
     <br />
     <br />
     <a href="https://pypi.org/project/grapes-graph/"><img src="https://img.shields.io/pypi/v/grapes-graph.svg?style=flat&logo=pypi" alt="pypi"></a>
-    <a href="https://readthedocs.org/projects/grapes-graph/badge/?version=latest"><img src="https://grapes-graph.readthedocs.io/en/latest/?badge=latest" alt="Test Status"></a>
-    <a href="https://codecov.io/gh/nouturnsign/grapes/graph/badge.svg?token=ET63SAOWJO"><img src="https://codecov.io/gh/nouturnsign/grapes" alt="codecov"></a>
-    <a href="https://img.shields.io/github/license/nouturnsign/grapes"><img src="https://opensource.org/licenses/MIT" alt="License: MIT"></a>
-    <a href="https://img.shields.io/badge/code%20style-black-000000.svg"><img src="https://github.com/psf/black" alt="Code style: black"></a>
-    <a href="https://snyk.io/test/github/nouturnsign/grapes/badge.svg"><img src="https://snyk.io/test/github/nouturnsign/grapes" alt="Known Vulnerabilities"></a>
+    <a href="https://grapes-graph.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/grapes-graph/badge/?version=latest" alt="Documentation Status" /></a>
+    <a href="https://github.com/nouturnsign/grapes/actions/workflows/tests.yml"><img src="https://github.com/nouturnsign/grapes/actions/workflows/.github/workflows/tests.yml/badge.svg" alt="Test Status"></a>
+    <a href="https://codecov.io/gh/nouturnsign/grapes"><img src="https://codecov.io/gh/nouturnsign/grapes/graph/badge.svg?token=ET63SAOWJO" alt="codecov"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/nouturnsign/grapes" alt="License: MIT"></a>
+    <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
+    <a href="https://snyk.io/test/github/nouturnsign/grapes"><img src="https://snyk.io/test/github/nouturnsign/grapes/badge.svg" alt="Known Vulnerabilities"></a>
     <br />
     <br />
     <i>A Python graph library</i>
