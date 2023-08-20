@@ -294,7 +294,7 @@ Multigraph_get_weights(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
     retvalue = weights;
     Py_INCREF(weights);
 err:
-    Py_DECREF(weights);
+    Py_XDECREF(weights);
     return retvalue;
 }
 
@@ -630,15 +630,19 @@ Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 
     retvalue = Py_BuildValue("(OO)", dist_list, prev_list);
 err:
-    if (*dist) {
+    if (dist) {
         for (Py_ssize_t u = 0; u < self->node_count; ++u) {
-            free(dist[u]);
+            if (dist[u]) {
+                free(dist[u]);
+            }
         }
     }
     free(dist);
-    if (*prev) {
+    if (prev) {
         for (Py_ssize_t u = 0; u < self->node_count; ++u) {
-            free(prev[u]);
+            if (prev[u]) {
+                free(prev[u]);
+            }
         }
     }
     free(prev);
