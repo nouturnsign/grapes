@@ -1,7 +1,12 @@
 # Grapes
 <p align="center">
-    <a href="https://grapes-graph.readthedocs.io/en/latest/?badge=latest/"><img src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg#gh-light-mode-only" alt="Grapes logo" height="200"></a>
-    <a href="https://grapes-graph.readthedocs.io/en/latest/?badge=latest/"><img src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-dark.svg#gh-dark-mode-only" alt="Grapes logo" height="200"></a>
+    <a href="https://grapes-graph.readthedocs.io/en/latest/?badge=latest/">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-dark.svg">
+            <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg">
+            <img alt="Grapes logo" src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg">
+        </picture>
+    </a>
     <br />
     <br />
     <a href="https://pypi.org/project/grapes-graph/"><img src="https://img.shields.io/pypi/v/grapes-graph.svg?style=flat&logo=pypi" alt="pypi"></a>
