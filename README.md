@@ -25,4 +25,3 @@ for more info.
 *   more algorithms
 *   more tests
 *   add drawing options
-*   create a nice logo
