@@ -43,9 +43,7 @@ MinHeap_free(MinHeap *heap)
     }
 
     free(heap->array);
-    heap->array = NULL;
     free(heap);
-    heap = NULL;
     return;
 }
 

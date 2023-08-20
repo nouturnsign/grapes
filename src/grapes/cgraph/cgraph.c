@@ -80,20 +80,14 @@ Multigraph_dealloc(MultigraphObject *self)
 {
     for (Py_ssize_t i = 0; i < self->max_node_count; ++i) {
         free(self->adj_list[i]);
-        self->adj_list[i] = NULL;
     }
     for (Py_ssize_t i = 0; i < self->max_node_count; ++i) {
         free(self->weight[i]);
-        self->weight[i] = NULL;
     }
     free(self->adj_list);
-    self->adj_list = NULL;
     free(self->neighbor_count);
-    self->neighbor_count = NULL;
     free(self->max_neighbor_count);
-    self->max_neighbor_count = NULL;
     free(self->weight);
-    self->weight = NULL;
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
