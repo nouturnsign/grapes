@@ -11,11 +11,11 @@
             <circle cx="1650" cy="1343" r="350" fill="#660198"/>
             <circle cx="1250" cy="2036" r="350" fill="#800080"/>
         </g>
-        <g>
-            <line x1="753" y1="825" x2="1347" y2="1168" stroke="black" stroke-width="50"/>
-            <line x1="1600" y1="650" x2="1700" y2="650" stroke="black" stroke-width="50"/>
-            <line x1="1200" y1="1343" x2="1300" y2="1343" stroke="black" stroke-width="50"/>
-            <line x1="1475" y1="1646" x2="1425" y2="1733" stroke="black" stroke-width="50"/>
+        <g stroke="black" stroke-width="50">
+            <line x1="753" y1="825" x2="1347" y2="1168"/>
+            <line x1="1600" y1="650" x2="1700" y2="650"/>
+            <line x1="1200" y1="1343" x2="1300" y2="1343"/>
+            <line x1="1475" y1="1646" x2="1425" y2="1733"/>
         </g>
     </g>
     <g transform="translate(2500, 0)" fill="black">
