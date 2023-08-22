@@ -47,7 +47,7 @@ static struct PyModuleDef cgraphmodule = {
     .m_size = -1,
 };
 
-typedef struct MultigraphObject {
+struct MultigraphObject_s {
     PyObject_HEAD
     int          is_directed;
     Py_ssize_t **adj_list;  // list of adjacency lists (adj_list[i]
@@ -61,7 +61,7 @@ typedef struct MultigraphObject {
     Py_ssize_t max_node_count;  // current maximum number of nodes allocated
     double   **weight;          // list of weight lists (by index)
     Py_ssize_t edge_count;
-} MultigraphObject;
+};
 
 static PyTypeObject MultigraphType = {
     PyVarObject_HEAD_INIT(NULL, 0)  // clang-format off

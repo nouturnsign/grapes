@@ -4,8 +4,10 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-typedef struct MinHeapNode MinHeapNode;
-typedef struct MinHeap     MinHeap;
+struct MinHeapNode_s;
+typedef struct MinHeapNode_s MinHeapNode;
+struct MinHeap_s;
+typedef struct MinHeap_s MinHeap;
 
 MinHeap   *MinHeap_alloc(Py_ssize_t max_size);
 void       MinHeap_free(MinHeap *heap);

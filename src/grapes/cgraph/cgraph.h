@@ -9,15 +9,17 @@ PyMODINIT_FUNC            PyInit_cgraph(void);
 static struct PyModuleDef cgraphmodule;
 
 // classes
-typedef struct MultigraphObject MultigraphObject;
-static PyTypeObject             MultigraphType;
-static void                     Multigraph_dealloc(MultigraphObject *self);
-static PyObject   *Multigraph_new(PyTypeObject *type, PyObject *args,
-                                  PyObject *kwds);
-static int         Multigraph_init(MultigraphObject *self, PyObject *args,
+struct MultigraphObject_s;
+typedef struct MultigraphObject_s MultigraphObject;
+
+static PyTypeObject MultigraphType;
+static void         Multigraph_dealloc(MultigraphObject *self);
+static PyObject    *Multigraph_new(PyTypeObject *type, PyObject *args,
                                    PyObject *kwds);
-static PyMethodDef Multigraph_methods[12];  // 1 more than listed below to
-                                            // include a sentinel value
+static int          Multigraph_init(MultigraphObject *self, PyObject *args,
+                                    PyObject *kwds);
+static PyMethodDef  Multigraph_methods[12];  // 1 more than listed below to
+                                             // include a sentinel value
 static PyObject *Multigraph_get_node_count(MultigraphObject *self,
                                            PyObject *Py_UNUSED(ignored));
 static PyObject *Multigraph_get_edge_count(MultigraphObject *self,

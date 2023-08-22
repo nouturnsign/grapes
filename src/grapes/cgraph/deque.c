@@ -3,19 +3,19 @@
 
 #include "deque.h"
 
-typedef struct DequeNode {
+struct DequeNode_s {
     Py_ssize_t value;
     DequeNode *prev;
     DequeNode *next;
-} DequeNode;
+};
 
-typedef struct Deque {
+struct Deque_s {
     DequeNode *head;
     DequeNode *tail;
-} Deque;
+};
 
 Deque *
-Deque_alloc()
+Deque_alloc(void)
 {
     Deque *deque = malloc(sizeof(*deque));
     if (deque == NULL) {

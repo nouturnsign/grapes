@@ -3,16 +3,16 @@
 
 #include "heap.h"
 
-typedef struct MinHeapNode {
+struct MinHeapNode_s {
     Py_ssize_t priority;
     Py_ssize_t key;
-} MinHeapNode;
+};
 
-typedef struct MinHeap {
+struct MinHeap_s {
     Py_ssize_t   size;
     Py_ssize_t   max_size;
     MinHeapNode *array;
-} MinHeap;
+};
 
 MinHeap *
 MinHeap_alloc(Py_ssize_t max_size)
