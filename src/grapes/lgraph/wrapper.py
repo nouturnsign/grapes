@@ -50,11 +50,11 @@ class LabeledGraph:
     :type is_directed: bool
     :param is_simple: Whether or not the graph is simple, defaults to True
     :type is_simple: bool
-    :param label_data: Optional label data, defaults to None
-    :type label_data: InvertibleMapping[Hashable, int]
-    :param underlying_graph: Optional :class:`grapes.Multigraph` to
-        wrap, defaults to None
-    :type underlying_graph: :class:`grapes.Multigraph`
+    :param _label_data: Optional label data for internal use, defaults to None
+    :type _label_data: InvertibleMapping[Hashable, int]
+    :param _underlying_graph: Optional :class:`grapes.Multigraph` to
+        wrap for internal use, defaults to None
+    :type _underlying_graph: :class:`grapes.Multigraph`
     :param _unique_edges: Set of unique edges in a simple graph for internal
         use, defaults to None
     :type _unique_edges: set[tuple[Hashable, Hashable]]
@@ -67,25 +67,27 @@ class LabeledGraph:
         self: Self,
         is_directed: bool = False,
         is_simple: bool = True,
-        label_data: Optional[InvertibleMapping[Hashable, int]] = None,
-        underlying_graph: Optional[Multigraph] = None,
+        _label_data: Optional[InvertibleMapping[Hashable, int]] = None,
+        _underlying_graph: Optional[Multigraph] = None,
         _unique_edges: Optional[set[tuple[Hashable, Hashable]]] = None,
         _has_negative_weight: bool = False,
     ) -> None:
         self.is_directed = is_directed
         self.is_simple = is_simple
-        if label_data is None:
-            self.label_data = InvertibleMapping()
+        if _label_data is None:
+            self._label_data = InvertibleMapping()
         else:
-            self.label_data = label_data
-        if underlying_graph is None:
-            self.underlying_graph = Multigraph(is_directed, len(self.label_data.keys()))
+            self._label_data = _label_data
+        if _underlying_graph is None:
+            self._underlying_graph = Multigraph(
+                is_directed, len(self._label_data.keys())
+            )
         else:
-            self.underlying_graph = underlying_graph
+            self._underlying_graph = _underlying_graph
         if _unique_edges is None:
-            self.unique_edges = set()
+            self._unique_edges = set()
         else:
-            self.unique_edges = _unique_edges
+            self._unique_edges = _unique_edges
         self._has_negative_weight = _has_negative_weight
 
     @classmethod
@@ -132,7 +134,7 @@ class LabeledGraph:
 
         :type: list[Hashable]
         """
-        return list(self.label_data.keys())
+        return list(self._label_data.keys())
 
     @property
     def edges(self: Self) -> dict[tuple[Hashable, Hashable], float]:
@@ -141,9 +143,9 @@ class LabeledGraph:
         :type: dict[tuple[Hashable, Hashable], float]
         """
         return {
-            (self.label_data.inverse[u], self.label_data.inverse[v]): w
+            (self._label_data.inverse[u], self._label_data.inverse[v]): w
             for (u, v), w in zip(
-                self.underlying_graph.get_edges(), self.underlying_graph.get_weights()
+                self._underlying_graph.get_edges(), self._underlying_graph.get_weights()
             )
         }
 
@@ -154,9 +156,9 @@ class LabeledGraph:
         :type label: Hashable
         :raises GraphDuplicateNodeError: Graph already contains the given node.
         """
-        if label in self.label_data:
+        if label in self._label_data:
             raise GraphDuplicateNodeError(label)
-        self.label_data[label] = self.underlying_graph.add_node()
+        self._label_data[label] = self._underlying_graph.add_node()
 
     def add_edge(
         self: Self,
@@ -179,19 +181,19 @@ class LabeledGraph:
         :raises SimpleGraphWithDuplicateEdgeError: Graph is a simple graph and
             attempted to add a duplicate edge.
         """
-        if u_label not in self.label_data:
+        if u_label not in self._label_data:
             raise GraphMissingNodeError(u_label)
-        if v_label not in self.label_data:
+        if v_label not in self._label_data:
             raise GraphMissingNodeError(v_label)
         if self.is_simple:
             if u_label == v_label:
                 raise SimpleGraphWithLoopError(u_label)
-            elif (u_label, v_label) in self.unique_edges:
+            elif (u_label, v_label) in self._unique_edges:
                 raise SimpleGraphWithDuplicateEdgeError(u_label, v_label)
-        self.unique_edges.add((u_label, v_label))
-        self.underlying_graph.add_edge(
-            self.label_data[u_label],
-            self.label_data[v_label],
+        self._unique_edges.add((u_label, v_label))
+        self._underlying_graph.add_edge(
+            self._label_data[u_label],
+            self._label_data[v_label],
             weight=weight,
         )
         if weight < 0:
@@ -222,12 +224,12 @@ class LabeledGraph:
             `dst_label`. Returns an empty list if no path found.
         :rtype: list[Hashable]
         """
-        if src_label not in self.label_data:
+        if src_label not in self._label_data:
             raise GraphMissingNodeError(src_label)
-        if dst_label not in self.label_data:
+        if dst_label not in self._label_data:
             raise GraphMissingNodeError(dst_label)
-        src = self.label_data[src_label]
-        dst = self.label_data[dst_label]
+        src = self._label_data[src_label]
+        dst = self._label_data[dst_label]
 
         if algorithm == ShortestPathAlgorithm.AUTO:
             if self._has_negative_weight:
@@ -241,8 +243,8 @@ class LabeledGraph:
                     "Cannot perform Dijkstra's algorithm on a graph with negative "
                     "weights."
                 )
-            _, prev = self.underlying_graph.dijkstra([src], dst)
-            if prev[dst] == self.underlying_graph.get_node_count():
+            _, prev = self._underlying_graph.dijkstra([src], dst)
+            if prev[dst] == self._underlying_graph.get_node_count():
                 path = []
             else:
                 path = [dst]
@@ -252,11 +254,11 @@ class LabeledGraph:
                     path.append(curr)
                 path.reverse()
         elif algorithm == ShortestPathAlgorithm.FLOYD_WARSHALL:
-            result = self.underlying_graph.floyd_warshall()
+            result = self._underlying_graph.floyd_warshall()
             if result is None:
                 raise NegativeCycleError("Floyd-Warshall")
             _, prev = result
-            if prev[src][dst] == self.underlying_graph.get_node_count():
+            if prev[src][dst] == self._underlying_graph.get_node_count():
                 path = []
             else:
                 path = [dst]
@@ -267,14 +269,14 @@ class LabeledGraph:
                 path.reverse()
         else:
             raise ValueError(f"Invalid {algorithm=}.")
-        return [self.label_data.inverse[node] for node in path]
+        return [self._label_data.inverse[node] for node in path]
 
     def get_component_sizes(self: Self) -> list[int]:
         """Return the sizes of the (connected) components in the graph.
 
         :rtype: list[int]
         """
-        return self.underlying_graph.get_component_sizes()
+        return self._underlying_graph.get_component_sizes()
 
     def is_connected(self: Self) -> bool:
         """Return the whether or not the graph is connected.
@@ -290,7 +292,7 @@ class LabeledGraph:
         :returns: Returns `True` if the graph is bipartite; otherwise, `False`.
         :rtype: bool
         """
-        return self.underlying_graph.is_bipartite()
+        return self._underlying_graph.is_bipartite()
 
     def compute_circular_layout(
         self: Self,
@@ -312,7 +314,7 @@ class LabeledGraph:
         :returns: (number of nodes) by 2 array describing 2d coordinates
         :rtype: npt.NDArray[np.float32]
         """
-        return self.underlying_graph.compute_circular_layout(
+        return self._underlying_graph.compute_circular_layout(
             radius, initial_angle, x_center, y_center
         )
 
@@ -400,16 +402,16 @@ class LabeledGraph:
         ):
             np.save(node_layout, layout)
             np.save(
-                edge_data, np.array(self.underlying_graph.get_edges(), dtype=np.uint32)
+                edge_data, np.array(self._underlying_graph.get_edges(), dtype=np.uint32)
             )
             np.save(
                 weight_data,
-                np.array(self.underlying_graph.get_weights(), dtype=np.float32),
+                np.array(self._underlying_graph.get_weights(), dtype=np.float32),
             )
             np.save(
                 label_data,
                 np.array(
-                    list(str(label) for label in self.label_data.keys()),
+                    list(str(label) for label in self._label_data.keys()),
                     dtype=np.unicode_,
                 ),
             )
