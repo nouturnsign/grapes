@@ -111,8 +111,8 @@ err:
 }
 
 Py_ssize_t
-visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
-      short *visited)
+visit_component(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
+                Py_ssize_t src, short *visited)
 {
     visited[src] = GRAPES_TRUE;
     Py_ssize_t size = 1;

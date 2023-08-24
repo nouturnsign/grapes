@@ -687,8 +687,8 @@ Multigraph_get_component_sizes(MultigraphObject *self,
     Py_ssize_t count = 0;
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         if (!visited[i]) {
-            sizes[count++] =
-                visit(self->adj_list, self->neighbor_count, i, visited);
+            sizes[count++] = visit_component(self->adj_list,
+                                             self->neighbor_count, i, visited);
         }
         if (PyErr_Occurred()) {
             goto err;
