@@ -714,7 +714,10 @@ err:
 static PyObject *
 Multigraph_is_bipartite(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
-    short *color = malloc(sizeof(*color) * self->node_count);
+    int    retvalue_code = -1;
+    short *color = NULL;
+
+    color = malloc(sizeof(*color) * self->node_count);
     if (color == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc color at memory address %p",
@@ -727,23 +730,36 @@ Multigraph_is_bipartite(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         if (!visit_color(self->adj_list, self->neighbor_count, i, color)) {
-            free(color);
-            Py_RETURN_FALSE;
+            retvalue_code = GRAPES_FALSE;
+            goto err;
         }
         if (PyErr_Occurred()) {
-            free(color);
-            return NULL;
+            goto err;
         }
     }
 
+    retvalue_code = 1;
+err:
     free(color);
-    Py_RETURN_TRUE;
+    if (retvalue_code == GRAPES_TRUE) {
+        Py_RETURN_TRUE;
+    }
+    else if (retvalue_code == GRAPES_FALSE) {
+        Py_RETURN_FALSE;
+    }
+    else {
+        return NULL;
+    }
 }
 
 static PyObject *
 Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
                                    PyObject *kwds)
 {
+    PyObject    *retvalue = NULL;
+    PyObject    *layout = NULL;
+    npy_float32 *raw_layout = NULL;
+
     static char *kwlist[] = {"radius", "initial_angle", "x_center", "y_center",
                              NULL};
     double       radius;
@@ -752,16 +768,15 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     double       y_center;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "dddd", kwlist, &radius,
                                      &initial_angle, &x_center, &y_center)) {
-        return NULL;
+        goto err;
     }
 
-    npy_float32 *raw_layout =
-        malloc(sizeof(*raw_layout) * self->node_count * 2);
+    raw_layout = malloc(sizeof(*raw_layout) * self->node_count * 2);
     if (raw_layout == NULL) {
         PyErr_Format(PyExc_MemoryError,
                      "Unable to malloc raw_layout at memory address %p",
                      (void *) raw_layout);
-        return NULL;
+        goto err;
     }
     for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         double theta =
@@ -771,12 +786,16 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     }
 
     const npy_intp dims[2] = {self->node_count, 2};
-    PyObject      *layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_FLOAT32,
-                                                      (void *) raw_layout);
+    layout = PyArray_SimpleNewFromData(2, &dims[0], NPY_FLOAT32,
+                                       (void *) raw_layout);
     if (PyErr_Occurred()) {
-        free(raw_layout);
-        return NULL;
+        goto err;
     }
+
+    retvalue = layout;
+    Py_INCREF(layout);
+err:
     free(raw_layout);
-    return layout;
+    Py_XDECREF(layout);
+    return retvalue;
 }
