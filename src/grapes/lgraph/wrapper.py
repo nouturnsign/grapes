@@ -21,6 +21,7 @@ from .errors import (
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
     AlgorithmPreconditionError,
+    NegativeCycle,
 )
 from .invmap import InvertibleMapping
 from .renderer import GrapesRenderer
@@ -214,6 +215,9 @@ class LabeledGraph:
         :raises GraphMissingNodeError: Graph is missing one of the nodes.
         :raises AlgorithmPreconditionError: The preconditions for the given
             algorithm have not been met.
+        :raises NegativeCycleError: A subclass of
+            :exception:`AlgorithmPreconditionError` denoting a negative-weight cycle, or
+            an infinitely short path.
         :return: List of nodes, starting from `src_label` and ending with
             `dst_label`. Returns an empty list if no path found.
         :rtype: list[Hashable]
@@ -248,7 +252,10 @@ class LabeledGraph:
                     path.append(curr)
                 path.reverse()
         elif algorithm == ShortestPathAlgorithm.FLOYD_WARSHALL:
-            _, prev = self.underlying_graph.floyd_warshall()
+            result = self.underlying_graph.floyd_warshall()
+            if result is None:
+                raise NegativeCycle("Floyd-Warshall")
+            _, prev = result
             if prev[src][dst] == self.underlying_graph.get_node_count():
                 path = []
             else:

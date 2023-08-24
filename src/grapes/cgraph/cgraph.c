@@ -520,8 +520,9 @@ err:
 static PyObject *
 Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
+    int          retvalue_code = -1;
     PyObject    *retvalue = NULL;
-    PyObject    *dist_list = NULL, *prev_list = NULL;
+    PyObject    *dist_prev_tuple = NULL, *dist_list = NULL, *prev_list = NULL;
     double     **dist = NULL;
     Py_ssize_t **prev = NULL;
 
@@ -574,25 +575,15 @@ Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         }
     }
 
-    for (Py_ssize_t u = 0; u < self->node_count; ++u) {
-        dist[u][u] = 0;
-        prev[u][u] = u;
-        for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
-            Py_ssize_t v = self->adj_list[u][j];
-            dist[u][v] = self->weight[u][j];
-            prev[u][v] = u;
-        }
+    int fw_result =
+        visit_floyd_warshall(self->adj_list, self->neighbor_count,
+                             self->node_count, self->weight, dist, prev);
+    if (fw_result == -1) {
+        goto err;
     }
-
-    for (Py_ssize_t k = 0; k < self->node_count; ++k) {
-        for (Py_ssize_t i = 0; i < self->node_count; ++i) {
-            for (Py_ssize_t j = 0; j < self->node_count; ++j) {
-                if (dist[i][j] > dist[i][k] + dist[k][j]) {
-                    dist[i][j] = dist[i][k] + dist[k][j];
-                    prev[i][j] = prev[k][j];
-                }
-            }
-        }
+    else if (fw_result == 1) {
+        retvalue_code = 1;
+        goto err;
     }
 
     dist_list = PyList_New(self->node_count);
@@ -629,7 +620,14 @@ Multigraph_floyd_warshall(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         PyList_SET_ITEM(prev_list, i, prev_row);
     }
 
-    retvalue = Py_BuildValue("(OO)", dist_list, prev_list);
+    dist_prev_tuple = Py_BuildValue("(OO)", dist_list, prev_list);
+    if (dist_prev_tuple == NULL) {
+        goto err;
+    }
+
+    retvalue_code = 0;
+    retvalue = dist_prev_tuple;
+    Py_INCREF(dist_prev_tuple);
 err:
     if (dist) {
         for (Py_ssize_t u = 0; u < self->node_count; ++u) {
@@ -649,7 +647,13 @@ err:
     free(prev);
     Py_XDECREF(dist_list);
     Py_XDECREF(prev_list);
-    return retvalue;
+    Py_XDECREF(dist_prev_tuple);
+    if (retvalue_code == 1) {
+        Py_RETURN_NONE;
+    }
+    else {
+        return retvalue;
+    }
 }
 
 static PyObject *

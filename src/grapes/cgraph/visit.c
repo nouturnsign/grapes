@@ -70,6 +70,46 @@ err:
     return;
 }
 
+int
+visit_floyd_warshall(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
+                     Py_ssize_t node_count, double **weight, double **dist,
+                     Py_ssize_t **prev)
+{
+    int retvalue = -1;
+
+    for (Py_ssize_t u = 0; u < node_count; ++u) {
+        dist[u][u] = 0;
+        prev[u][u] = u;
+        for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
+            Py_ssize_t v = adj_list[u][j];
+            dist[u][v] = weight[u][j];
+            prev[u][v] = u;
+        }
+    }
+
+    for (Py_ssize_t k = 0; k < node_count; ++k) {
+        for (Py_ssize_t i = 0; i < node_count; ++i) {
+            for (Py_ssize_t j = 0; j < node_count; ++j) {
+                if (dist[i][j] > dist[i][k] + dist[k][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                    prev[i][j] = prev[k][j];
+                }
+            }
+        }
+    }
+
+    for (Py_ssize_t i = 0; i < node_count; ++i) {
+        if (dist[i][i] < 0) {
+            retvalue = 1;
+            goto err;
+        }
+    }
+
+    retvalue = 0;
+err:
+    return retvalue;
+}
+
 Py_ssize_t
 visit(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count, Py_ssize_t src,
       short *visited)

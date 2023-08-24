@@ -1,6 +1,7 @@
 """Contains the Multigraph class, implementing algorithms and data structures
 in C.
 """
+from typing import Optional
 
 try:
     from typing import Self
@@ -84,12 +85,12 @@ class Multigraph:
         :return: Lists of nodes, containing the distances and predecessors.
         :rtype: tuple[list[int], list[int]]
         """
-    def floyd_warshall(self: Self) -> tuple[list[list[int]], list[list[int]]]:
+    def floyd_warshall(self: Self) -> Optional[tuple[list[list[int]], list[list[int]]]]:
         """Floyd-Warshall algorithm.
 
         :return: Lists of lists of nodes, containing the distances and
-            predecessors.
-        :rtype: tuple[list[list[int]], list[list[int]]]
+            predecessors. If a negative weight cycle is found, returns `None`.
+        :rtype: Optional[tuple[list[list[int]], list[list[int]]]]
         """
     def get_component_sizes(self: Self) -> list[int]:
         """Return the sizes of the (connected) components in the graph.

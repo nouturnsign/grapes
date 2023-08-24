@@ -61,6 +61,20 @@ class AlgorithmPreconditionError(Exception):
     :type message: str
     """
 
+    def __init__(self: Self, message: str) -> None:
+        super().__init__(message)
+
+
+class NegativeCycleError(AlgorithmPreconditionError):
+    """Raised when the given algorithm detects a negative-weight cycle.
+
+    :param algorithm: Algorithm.
+    :type algorithm: str
+    """
+
+    def __init__(self: Self, algorithm: str) -> None:
+        super().__init__(f"{algorithm} found a negative-weight cycle.")
+
 
 class RendererInvalidInputError(Exception):
     """Raised when input data to renderer is incorrectly formatted.

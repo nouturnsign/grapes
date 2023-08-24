@@ -11,6 +11,7 @@ __all__ = [
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
     "AlgorithmPreconditionError",
+    "NegativeCycleError",
     "RendererInvalidInputError",
 ]
 
@@ -27,5 +28,6 @@ from .errors import (
     SimpleGraphWithLoopError,
     SimpleGraphWithDuplicateEdgeError,
     AlgorithmPreconditionError,
+    NegativeCycleError,
     RendererInvalidInputError,
 )
