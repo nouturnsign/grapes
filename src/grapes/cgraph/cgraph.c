@@ -9,7 +9,7 @@
 #include "deque.h"
 #include "heap.h"
 #include "macros.h"
-#include "trav.h"
+#include "visit.h"
 
 PyMODINIT_FUNC
 PyInit_cgraph(void)

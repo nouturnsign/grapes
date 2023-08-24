@@ -8,7 +8,7 @@ grapes_ext = Extension(
         "src/grapes/cgraph/cgraph.c",
         "src/grapes/cgraph/deque.c",
         "src/grapes/cgraph/heap.c",
-        "src/grapes/cgraph/trav.c",
+        "src/grapes/cgraph/visit.c",
     ],
     include_dirs=["src/grapes/cgraph", np.get_include()],
 )
