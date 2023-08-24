@@ -21,7 +21,7 @@ from .errors import (
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
     AlgorithmPreconditionError,
-    NegativeCycle,
+    NegativeCycleError,
 )
 from .invmap import InvertibleMapping
 from .renderer import GrapesRenderer
@@ -254,7 +254,7 @@ class LabeledGraph:
         elif algorithm == ShortestPathAlgorithm.FLOYD_WARSHALL:
             result = self.underlying_graph.floyd_warshall()
             if result is None:
-                raise NegativeCycle("Floyd-Warshall")
+                raise NegativeCycleError("Floyd-Warshall")
             _, prev = result
             if prev[src][dst] == self.underlying_graph.get_node_count():
                 path = []
