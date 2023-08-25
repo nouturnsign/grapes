@@ -483,8 +483,12 @@ Multigraph_dijkstra(MultigraphObject *self, PyObject *args, PyObject *kwds)
         goto err;
     }
 
+    // an undirected edge counts as two directed edges
+    Py_ssize_t directed_edge_count =
+        (2 - self->is_directed) * self->edge_count;
     visit_dijkstra(self->adj_list, self->neighbor_count, self->node_count,
-                   srcs, src_count, self->weight, dist, prev);
+                   directed_edge_count, srcs, src_count, self->weight, dist,
+                   prev);
     if (PyErr_Occurred()) {
         goto err;
     }

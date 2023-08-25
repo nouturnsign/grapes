@@ -7,10 +7,11 @@
 
 void
 visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-               Py_ssize_t node_count, Py_ssize_t *srcs, Py_ssize_t src_count,
-               double **weight, double *dist, Py_ssize_t *prev)
+               Py_ssize_t node_count, Py_ssize_t directed_edge_count,
+               Py_ssize_t *srcs, Py_ssize_t src_count, double **weight,
+               double *dist, Py_ssize_t *prev)
 {
-    short   *visited = NULL;
+    int     *visited = NULL;
     MinHeap *heap = NULL;
 
     visited = malloc(sizeof(*visited) * node_count);
@@ -19,7 +20,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         goto err;
     }
 
-    heap = MinHeap_alloc((node_count * (node_count - 1)) / 2);
+    heap = MinHeap_alloc(directed_edge_count);
     if (PyErr_Occurred()) {
         goto err;
     }
@@ -35,23 +36,21 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         dist[src] = 0;
         visited[src] = GRAPES_TRUE;
         prev[src] = src;
-        MinHeap_insert(heap, src, 0);
+        MinHeap_insert(heap, src, 0.0);
         if (PyErr_Occurred()) {
             goto err;
         }
     }
 
-    Py_ssize_t u, v;
-    double     w;
     while (!MinHeap_is_empty(heap)) {
-        u = MinHeap_extract_min(heap);
+        Py_ssize_t u = MinHeap_extract_min(heap);
         visited[u] = GRAPES_TRUE;
         for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
-            v = adj_list[u][j];
+            Py_ssize_t v = adj_list[u][j];
             if (visited[v]) {
                 continue;
             }
-            w = weight[u][j];
+            double w = weight[u][j];
 
             if (dist[v] > dist[u] + w) {
                 dist[v] = dist[u] + w;

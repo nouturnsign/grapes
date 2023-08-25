@@ -4,7 +4,7 @@
 #include "heap.h"
 
 struct MinHeapNode_s {
-    Py_ssize_t priority;
+    double     priority;
     Py_ssize_t key;
 };
 
@@ -48,7 +48,7 @@ MinHeap_free(MinHeap *heap)
 }
 
 void
-MinHeap_insert(MinHeap *heap, Py_ssize_t key, Py_ssize_t priority)
+MinHeap_insert(MinHeap *heap, Py_ssize_t key, double priority)
 {
     if (heap->size >= heap->max_size) {
         PyErr_Format(PyExc_MemoryError,
@@ -110,7 +110,7 @@ MinHeap_siftup(MinHeap *heap, Py_ssize_t pos)
     Py_ssize_t  endpos = heap->size;
     Py_ssize_t  startpos = pos;
     MinHeapNode newitem = heap->array[pos];
-    Py_ssize_t  childpos = 2 * pos + 1;
+    Py_ssize_t  childpos = pos << 1 | 1;
     Py_ssize_t  rightpos;
     while (childpos < endpos) {
         rightpos = childpos + 1;
@@ -120,7 +120,7 @@ MinHeap_siftup(MinHeap *heap, Py_ssize_t pos)
         }
         heap->array[pos] = heap->array[childpos];
         pos = childpos;
-        childpos = 2 * pos + 1;
+        childpos = pos << 1 | 1;
     }
     heap->array[pos] = newitem;
     MinHeap_siftdown(heap, startpos, pos);
