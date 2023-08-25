@@ -33,6 +33,8 @@ class ShortestPathAlgorithm(Enum):
 
     DIJKSTRAS = auto()
     """ShortestPathAlgorithm: Dijkstra's algorithm."""
+    BELLMAN_FORD = auto()
+    """ShortestPathAlgorithm: Bellman-Ford algorithm."""
     FLOYD_WARSHALL = auto()
     """ShortestPathAlgorithm: Floyd-Warshall algorithm."""
     AUTO = auto()
@@ -233,7 +235,7 @@ class LabeledGraph:
 
         if algorithm == ShortestPathAlgorithm.AUTO:
             if self._has_negative_weight:
-                algorithm = ShortestPathAlgorithm.FLOYD_WARSHALL
+                algorithm = ShortestPathAlgorithm.BELLMAN_FORD
             else:
                 algorithm = ShortestPathAlgorithm.DIJKSTRAS
 
@@ -244,6 +246,20 @@ class LabeledGraph:
                     "weights."
                 )
             _, prev = self._underlying_graph.dijkstra([src], dst)
+            if prev[dst] == self._underlying_graph.get_node_count():
+                path = []
+            else:
+                path = [dst]
+                curr = dst
+                while curr != prev[curr]:
+                    curr = prev[curr]
+                    path.append(curr)
+                path.reverse()
+        elif algorithm == ShortestPathAlgorithm.BELLMAN_FORD:
+            result = self._underlying_graph.bellman_ford([src], dst)
+            if result is None:
+                raise NegativeCycleError("Bellman-Ford")
+            _, prev = result
             if prev[dst] == self._underlying_graph.get_node_count():
                 path = []
             else:

@@ -3,6 +3,8 @@
 
 #include "deque.h"
 
+#include "macros.h"
+
 struct DequeNode_s {
     Py_ssize_t value;
     DequeNode *prev;
@@ -72,11 +74,19 @@ Py_ssize_t
 Deque_pop_front(Deque *deque)
 {
     Py_ssize_t value = deque->head->value;
-    deque->head = deque->head->next;
+    DequeNode *next = deque->head->next;
+    free(deque->head);
+    deque->head = next;
     if (deque->head == NULL) {
         deque->tail = NULL;
     }
     return value;
+}
+
+Py_ssize_t
+Deque_peek_front(Deque *deque)
+{
+    return deque->head->value;
 }
 
 void
@@ -106,11 +116,32 @@ Py_ssize_t
 Deque_pop_back(Deque *deque)
 {
     Py_ssize_t value = deque->tail->value;
-    deque->tail = deque->tail->prev;
+    DequeNode *prev = deque->tail->prev;
+    free(deque->tail);
+    deque->tail = prev;
     if (deque->tail == NULL) {
         deque->head = NULL;
     }
     return value;
+}
+
+Py_ssize_t
+Deque_peek_back(Deque *deque)
+{
+    return deque->tail->value;
+}
+
+short
+Deque_contains(Deque *deque, Py_ssize_t value)
+{
+    DequeNode *curr = deque->head;
+    while (curr != NULL) {
+        if (curr->value == value) {
+            return GRAPES_TRUE;
+        }
+        curr = curr->next;
+    }
+    return GRAPES_FALSE;
 }
 
 short

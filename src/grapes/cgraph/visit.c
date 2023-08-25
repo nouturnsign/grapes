@@ -70,6 +70,95 @@ err:
 }
 
 int
+visit_bellman_ford(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
+                   Py_ssize_t node_count, Py_ssize_t *srcs,
+                   Py_ssize_t src_count, double **weight, double *dist,
+                   Py_ssize_t *prev)
+{
+    // SPFA variant + SLF technique
+    // https://en.wikipedia.org/wiki/Shortest_path_faster_algorithm#Optimization_techniques
+    int         retvalue = -1;
+    Deque      *deque = NULL;
+    short      *in_deque = NULL;
+    Py_ssize_t *count = NULL;
+
+    deque = Deque_alloc();
+    if (deque == NULL) {
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate deque");
+        goto err;
+    }
+
+    in_deque = malloc(sizeof(*in_deque) * node_count);
+    if (in_deque == NULL) {
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate in_deque");
+        goto err;
+    }
+
+    count = malloc(sizeof(*count) * node_count);
+    if (count == NULL) {
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate count");
+        goto err;
+    }
+
+    for (Py_ssize_t u = 0; u < node_count; ++u) {
+        dist[u] = INFINITY;
+        prev[u] = node_count;
+        in_deque[u] = GRAPES_FALSE;
+        count[u] = 0;
+    }
+
+    for (Py_ssize_t i = 0; i < src_count; ++i) {
+        Py_ssize_t src = srcs[i];
+        dist[src] = 0;
+        prev[src] = src;
+        Deque_push_back(deque, src);
+        if (PyErr_Occurred()) {
+            goto err;
+        }
+        in_deque[src] = GRAPES_TRUE;
+    }
+
+    while (!Deque_is_empty(deque)) {
+        Py_ssize_t u = Deque_pop_front(deque);
+        in_deque[u] = GRAPES_FALSE;
+        for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
+            Py_ssize_t v = adj_list[u][j];
+            double     w = weight[u][j];
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                prev[v] = u;
+                if (in_deque[v]) {
+                    continue;
+                }
+
+                if (++count[v] == node_count) {
+                    retvalue = 1;
+                    goto err;
+                }
+                if (Deque_is_empty(deque) ||
+                    dist[v] >= dist[Deque_peek_front(deque)]) {
+                    Deque_push_back(deque, v);
+                }
+                else {
+                    Deque_push_front(deque, v);
+                }
+                if (PyErr_Occurred()) {
+                    goto err;
+                }
+                in_deque[v] = GRAPES_TRUE;
+            }
+        }
+    }
+
+    retvalue = 0;
+err:
+    free(in_deque);
+    free(count);
+    Deque_free(deque);
+    return retvalue;
+}
+
+int
 visit_floyd_warshall(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                      Py_ssize_t node_count, double **weight, double **dist,
                      Py_ssize_t **prev)

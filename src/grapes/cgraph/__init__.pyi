@@ -85,6 +85,19 @@ class Multigraph:
         :return: Lists of nodes, containing the distances and predecessors.
         :rtype: tuple[list[int], list[int]]
         """
+    def bellman_ford(
+        self: Self, srcs: list[int], dst: int
+    ) -> Optional[tuple[list[int], list[int]]]:
+        """Multiple source Bellman-Ford algorithm.
+
+        :param srcs: Begin (source) nodes
+        :type srcs: list[int]
+        :param dst: End (destination) node
+        :type dst: int
+        :return: Lists of nodes, containing the distances and predecessors. If
+            a negative weight cycle is found, returns `None`.
+        :rtype: Optional[tuple[list[int], list[int]]]
+        """
     def floyd_warshall(self: Self) -> Optional[tuple[list[list[int]], list[list[int]]]]:
         """Floyd-Warshall algorithm.
 

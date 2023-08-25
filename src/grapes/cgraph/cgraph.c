@@ -199,6 +199,8 @@ static PyMethodDef Multigraph_methods[] = {
      "Add an undirected edge to the graph given existing nodes."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
+    {"bellman_ford", (PyCFunction) Multigraph_bellman_ford,
+     METH_VARARGS | METH_KEYWORDS, "Multiple source Bellman-Ford algorithm."},
     {"floyd_warshall", (PyCFunction) Multigraph_floyd_warshall, METH_NOARGS,
      "Floyd-Warshall algorithm."},
     {"get_component_sizes", (PyCFunction) Multigraph_get_component_sizes,
@@ -519,6 +521,110 @@ err:
     Py_XDECREF(dist_list);
     Py_XDECREF(prev_list);
     return retvalue;
+}
+
+static PyObject *
+Multigraph_bellman_ford(MultigraphObject *self, PyObject *args, PyObject *kwds)
+{
+    int         retvalue_code = -1;
+    PyObject   *retvalue = NULL;
+    PyObject   *dist_prev_tuple = NULL, *dist_list = NULL, *prev_list = NULL;
+    Py_ssize_t *srcs = NULL;
+    double     *dist = NULL;
+    Py_ssize_t *prev = NULL;
+
+    static char *kwlist[] = {"srcs", "dst", NULL};
+    PyObject    *srcs_list;
+    Py_ssize_t   dst;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "On", kwlist, &srcs_list,
+                                     &dst)) {
+        goto err;
+    }
+
+    Py_ssize_t src_count = PyList_Size(srcs_list);
+    srcs = malloc(sizeof(*srcs) * src_count);
+    if (srcs == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc srcs at memory address %p",
+                     (void *) srcs);
+        goto err;
+    }
+    for (Py_ssize_t i = 0; i < src_count; ++i) {
+        PyObject *src = PyList_GetItem(srcs_list, i);
+        if (src == NULL) {
+            goto err;
+        }
+        srcs[i] = PyLong_AsSsize_t(src);
+    }
+
+    dist = malloc(sizeof(*dist) * self->node_count);
+    if (dist == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc dist at memory address %p",
+                     (void *) dist);
+        goto err;
+    }
+
+    prev = malloc(sizeof(*prev) * self->node_count);
+    if (prev == NULL) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Unable to malloc prev at memory address %p",
+                     (void *) prev);
+        goto err;
+    }
+
+    int bf_result = visit_bellman_ford(self->adj_list, self->neighbor_count,
+                                       self->node_count, srcs, src_count,
+                                       self->weight, dist, prev);
+    if (bf_result == -1) {
+        goto err;
+    }
+    else if (bf_result == 1) {
+        retvalue_code = 1;
+        goto err;
+    }
+
+    free(srcs);
+    srcs = NULL;
+
+    dist_list = PyList_New(self->node_count);
+    if (dist_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize dist_list");
+        goto err;
+    }
+    prev_list = PyList_New(self->node_count);
+    if (prev_list == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize prev_list");
+        goto err;
+    }
+
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+        PyList_SET_ITEM(dist_list, i, PyFloat_FromDouble(dist[i]));
+        PyList_SET_ITEM(prev_list, i, PyLong_FromSsize_t(prev[i]));
+    }
+
+    dist_prev_tuple = Py_BuildValue("(OO)", dist_list, prev_list);
+    if (dist_prev_tuple == NULL) {
+        goto err;
+    }
+
+    retvalue_code = 0;
+    retvalue = dist_prev_tuple;
+    Py_INCREF(dist_prev_tuple);
+err:
+    free(dist);
+    free(prev);
+    free(srcs);
+    Py_XDECREF(dist_list);
+    Py_XDECREF(prev_list);
+    Py_XDECREF(dist_prev_tuple);
+    if (retvalue_code == 1) {
+        Py_RETURN_NONE;
+    }
+    else {
+        return retvalue;
+    }
 }
 
 static PyObject *

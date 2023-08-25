@@ -13,8 +13,11 @@ Deque     *Deque_alloc(void);
 void       Deque_free(Deque *deque);
 void       Deque_push_front(Deque *deque, Py_ssize_t value);
 Py_ssize_t Deque_pop_front(Deque *deque);
+Py_ssize_t Deque_peek_front(Deque *deque);
 void       Deque_push_back(Deque *deque, Py_ssize_t value);
 Py_ssize_t Deque_pop_back(Deque *deque);
+Py_ssize_t Deque_peek_back(Deque *deque);
+short      Deque_contains(Deque *deque, Py_ssize_t value);
 short      Deque_is_empty(Deque *deque);
 void       Deque_print(Deque *deque);
 
