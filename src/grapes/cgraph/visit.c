@@ -52,7 +52,7 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
             }
             double w = weight[u][j];
 
-            if (dist[v] > dist[u] + w) {
+            if (dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;
                 prev[v] = u;
                 MinHeap_insert(heap, v, dist[v]);
