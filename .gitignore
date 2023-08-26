@@ -13,6 +13,7 @@ venv3.11/
 compile_flags.txt
 
 # System-specific
+*.dSYM/
 .DS_Store*
 Thumbs.db
 
