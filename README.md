@@ -32,8 +32,7 @@ Courier Prime, a font licensed under the SIL Open Font License. See https://quot
 for more info.
 
 ## TODO
-*   speed up Dijkstra's algorithm
-*   cycle finding in Bellman-Ford algorithm
 *   more algorithms
 *   more tests
 *   add drawing options
+*   implement immutability checks and buffer/pickle protocol
