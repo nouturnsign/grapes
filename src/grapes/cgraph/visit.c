@@ -20,8 +20,9 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         goto err;
     }
 
-    heap = MinHeap_alloc(directed_edge_count);
-    if (PyErr_Occurred()) {
+    heap = MinHeap_alloc(directed_edge_count, src_count);
+    if (heap == NULL) {
+        PyErr_Format(PyExc_MemoryError, "Failed to allocate heap");
         goto err;
     }
 
@@ -34,29 +35,37 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
     for (Py_ssize_t i = 0; i < src_count; ++i) {
         Py_ssize_t src = srcs[i];
         dist[src] = 0;
-        visited[src] = GRAPES_TRUE;
         prev[src] = src;
-        MinHeap_insert(heap, src, 0.0);
-        if (PyErr_Occurred()) {
+        if (MinHeap_insert(heap, src, 0.0) == -1) {
+            PyErr_Format(PyExc_ValueError,
+                         "Heap is full or cannot allocate more memory");
             goto err;
         }
     }
 
     while (!MinHeap_is_empty(heap)) {
         Py_ssize_t u = MinHeap_extract_min(heap);
+        if (u == -1) {
+            PyErr_Format(PyExc_ValueError, "Heap is empty");
+            goto err;
+        }
+        if (visited[u]) {
+            continue;
+        }
         visited[u] = GRAPES_TRUE;
         for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
             Py_ssize_t v = adj_list[u][j];
+            double     w = weight[u][j];
             if (visited[v]) {
                 continue;
             }
-            double w = weight[u][j];
-
             if (dist[u] + w < dist[v]) {
                 dist[v] = dist[u] + w;
                 prev[v] = u;
-                MinHeap_insert(heap, v, dist[v]);
-                if (PyErr_Occurred()) {
+                if (MinHeap_insert(heap, v, dist[v]) == -1) {
+                    PyErr_Format(
+                        PyExc_ValueError,
+                        "Heap is full or cannot allocate more memory");
                     goto err;
                 }
             }

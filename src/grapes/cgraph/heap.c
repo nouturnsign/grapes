@@ -3,19 +3,11 @@
 
 #include "heap.h"
 
-struct MinHeapNode_s {
-    double     priority;
-    Py_ssize_t key;
-};
-
-struct MinHeap_s {
-    Py_ssize_t   size;
-    Py_ssize_t   max_size;
-    MinHeapNode *array;
-};
+// adapted from: https://dl.acm.org/doi/10.1145/351827.384249
+// less naive binary heap
 
 MinHeap *
-MinHeap_alloc(Py_ssize_t max_size)
+MinHeap_alloc(Py_ssize_t max_capacity, Py_ssize_t init_capacity)
 {
     MinHeap *heap = malloc(sizeof(*heap));
     if (heap == NULL) {
@@ -24,12 +16,19 @@ MinHeap_alloc(Py_ssize_t max_size)
     }
 
     heap->size = 0;
-    heap->max_size = max_size;
-    heap->array = malloc(sizeof(*heap->array) * max_size);
-    if (heap->array == NULL) {
+    heap->capacity = init_capacity;
+    heap->max_capacity = max_capacity;
+    heap->data = malloc(sizeof(*heap->data) * (init_capacity + 2));
+    if (heap->data == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate heap array");
         free(heap);
         return NULL;
+    }
+
+    heap->data[0].key = -1;
+    heap->data[init_capacity + 1].key = max_capacity;
+    for (Py_ssize_t i = 1; i <= init_capacity; ++i) {
+        heap->data[i].key = max_capacity;
     }
 
     return heap;
@@ -42,97 +41,100 @@ MinHeap_free(MinHeap *heap)
         return;
     }
 
-    free(heap->array);
+    free(heap->data);
     free(heap);
     return;
 }
 
-void
+int
 MinHeap_insert(MinHeap *heap, Py_ssize_t key, double priority)
 {
-    if (heap->size >= heap->max_size) {
-        PyErr_Format(PyExc_MemoryError,
-                     "Cannot insert key %ld. Heap is already full!", key);
-        return;
+    if (heap->size >= heap->capacity) {
+        if (heap->capacity > heap->max_capacity) {
+            return -1;
+        }
+
+        heap->capacity =
+            (heap->capacity + (heap->capacity >> 3) + 6) & ~(Py_ssize_t) 3;
+        if (heap->capacity > heap->max_capacity) {
+            heap->capacity = heap->max_capacity;
+        }
+        heap->data =
+            realloc(heap->data, sizeof(*heap->data) * (heap->capacity + 2));
+        if (heap->data == NULL) {
+            return -1;
+        }
+        for (Py_ssize_t i = heap->size + 1; i <= heap->capacity + 1; ++i) {
+            heap->data[i].key = heap->max_capacity;
+        }
     }
 
-    Py_ssize_t i = heap->size++;
-    heap->array[i].priority = priority;
-    heap->array[i].key = key;
+    MinHeapNode *dat = heap->data;
+    Py_ssize_t   hole = ++heap->size;
+    Py_ssize_t   pred = hole >> 1;
+    Py_ssize_t   pred_key = dat[pred].key;
+    while (pred_key > key) {
+        dat[hole].key = pred_key;
+        dat[hole].priority = dat[pred].priority;
+        hole = pred;
+        pred >>= 1;
+        pred_key = dat[pred].key;
+    }
 
-    MinHeap_siftdown(heap, 0, heap->size - 1);
-    return;
+    dat[hole].key = key;
+    dat[hole].priority = priority;
+
+    return 0;
 }
 
 Py_ssize_t
 MinHeap_extract_min(MinHeap *heap)
 {
-    if (heap == NULL || heap->size == 0) {
+    if (heap->size <= 0) {
         return -1;
     }
 
-    MinHeapNode lastelt = heap->array[--heap->size];
-    Py_ssize_t  min_key = heap->array[0].key;
-    heap->array[0] = lastelt;
-    MinHeap_siftup(heap, 0);
+    MinHeapNode *dat = heap->data;
+
+    Py_ssize_t min_key = dat[1].key;
+
+    Py_ssize_t hole = 1;
+    Py_ssize_t succ = 2;
+    Py_ssize_t sz = heap->size;
+    while (succ < sz) {
+        Py_ssize_t key1 = dat[succ].key;
+        Py_ssize_t key2 = dat[succ + 1].key;
+        if (key1 > key2) {
+            ++succ;
+            dat[hole].key = key2;
+            dat[hole].priority = dat[succ].priority;
+        }
+        else {
+            dat[hole].key = key1;
+            dat[hole].priority = dat[succ].priority;
+        }
+        hole = succ;
+        succ <<= 1;
+    }
+
+    Py_ssize_t bubble = dat[sz].key;
+    Py_ssize_t pred = hole >> 1;
+    while (dat[pred].key > bubble) {
+        dat[hole] = dat[pred];
+        hole = pred;
+        pred >>= 1;
+    }
+
+    dat[hole].key = bubble;
+    dat[hole].priority = dat[sz].priority;
+
+    dat[heap->size--].key = heap->max_capacity;
+
     return min_key;
 }
 
 int
 MinHeap_is_empty(MinHeap *heap)
 {
-    return heap->size == 0;
-}
-
-void
-MinHeap_siftdown(MinHeap *heap, Py_ssize_t startpos, Py_ssize_t pos)
-{
-    MinHeapNode newitem = heap->array[pos];
-    Py_ssize_t  parentpos;
-    MinHeapNode parent;
-    while (pos > startpos) {
-        parentpos = (pos - 1) >> 1;
-        parent = heap->array[parentpos];
-        if (newitem.priority < parent.priority) {
-            heap->array[pos] = parent;
-            pos = parentpos;
-            continue;
-        }
-        break;
-    }
-    heap->array[pos] = newitem;
-    return;
-}
-
-void
-MinHeap_siftup(MinHeap *heap, Py_ssize_t pos)
-{
-    Py_ssize_t  endpos = heap->size;
-    Py_ssize_t  startpos = pos;
-    MinHeapNode newitem = heap->array[pos];
-    Py_ssize_t  childpos = pos << 1 | 1;
-    Py_ssize_t  rightpos;
-    while (childpos < endpos) {
-        rightpos = childpos + 1;
-        if (rightpos < endpos &&
-            heap->array[childpos].priority >= heap->array[rightpos].priority) {
-            childpos = rightpos;
-        }
-        heap->array[pos] = heap->array[childpos];
-        pos = childpos;
-        childpos = pos << 1 | 1;
-    }
-    heap->array[pos] = newitem;
-    MinHeap_siftdown(heap, startpos, pos);
-    return;
-}
-
-void
-MinHeap_print(MinHeap *heap)
-{
-    printf("heap size=%ld values=", heap->size);
-    for (Py_ssize_t i = 0; i < heap->size; ++i) {
-        printf("%ld, ", heap->array[i].key);
-    }
-    printf("\n");
+    return (heap->size <= 0);
 }
