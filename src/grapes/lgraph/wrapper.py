@@ -1,10 +1,11 @@
+"""Labeled graph implementation."""
+
 from typing import Hashable, Optional
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
-import numpy.typing as npt
 
 import itertools
 import json
@@ -13,19 +14,20 @@ from enum import Enum, auto
 
 import moderngl_window as mglw
 import numpy as np
+import numpy.typing as npt
 
-from .colors import TRANSPARENT, BLACK, TABLEAU_BLUE
+from ..cgraph import Multigraph
+from .colors import BLACK, TABLEAU_BLUE, TRANSPARENT
 from .errors import (
+    AlgorithmPreconditionError,
     GraphDuplicateNodeError,
     GraphMissingNodeError,
+    NegativeCycleError,
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
-    AlgorithmPreconditionError,
-    NegativeCycleError,
 )
 from .invmap import InvertibleMapping
-from .renderer import GrapesRenderer
-from ..cgraph import Multigraph
+from .renderer import GraphRenderer
 
 
 class ShortestPathAlgorithm(Enum):
@@ -44,7 +46,9 @@ class ShortestPathAlgorithm(Enum):
 
 
 class LabeledGraph:
-    """Represents a graph, allowing for nodes to be represented by label. The
+    """A graph with labeled nodes.
+
+    Represents a graph, allowing for nodes to be represented by label. The
     class is a thin wrapper for :class:`grapes.Multigraph` and
     :class:`grapes.GrapesRenderer`.
 
@@ -99,7 +103,9 @@ class LabeledGraph:
         labels: Optional[list[Hashable]] = None,
         n: Optional[int] = None,
     ) -> Self:
-        """Create a complete, undirected graph. Either the labels or n should
+        """Create a complete, undirected graph.
+
+        Either the labels or n should
         be specified. If n is specified, then labels will be set to 0 to n-1.
 
         :param labels: Optional labels, defaults to None
@@ -450,6 +456,6 @@ class LabeledGraph:
             args += ("--window", "headless", "--save-path", save_path)
 
         mglw.run_window_config(
-            GrapesRenderer,
+            GraphRenderer,
             args=args,
         )

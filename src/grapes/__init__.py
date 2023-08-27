@@ -1,10 +1,10 @@
-"""A graph algorithms and visualization Python package."""
+"""grapes - A graph algorithms and visualization Python package."""
 
 __all__ = [
     "Multigraph",
     "LabeledGraph",
     "ShortestPathAlgorithm",
-    "GrapesRenderer",
+    "GraphRenderer",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
@@ -17,15 +17,15 @@ __all__ = [
 
 from .cgraph import Multigraph
 from .lgraph import (
-    LabeledGraph,
-    ShortestPathAlgorithm,
-    GrapesRenderer,
-    GraphMissingNodeError,
-    GraphDuplicateNodeError,
-    SimpleGraphWithLoopError,
-    SimpleGraphWithDuplicateEdgeError,
     AlgorithmPreconditionError,
+    GraphDuplicateNodeError,
+    GraphMissingNodeError,
+    GraphRenderer,
+    LabeledGraph,
     NegativeCycleError,
     RendererInvalidInputError,
+    ShortestPathAlgorithm,
+    SimpleGraphWithDuplicateEdgeError,
+    SimpleGraphWithLoopError,
     colors,
 )

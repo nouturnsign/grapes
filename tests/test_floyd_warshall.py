@@ -1,6 +1,6 @@
-import grapes
-
 import pytest
+
+import grapes
 
 
 def test_floyd_warshall_correctness():

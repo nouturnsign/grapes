@@ -1,5 +1,6 @@
-import numpy as np
+"""Build grapes."""
 
+import numpy as np
 from setuptools import Extension, setup
 
 grapes_ext = Extension(

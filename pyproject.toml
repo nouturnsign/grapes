@@ -27,3 +27,12 @@ dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+src = ["src"]
+select = ["E", "F", "I", "N", "D"]
+ignore = ["D107", "D203", "D213"]
+extend-exclude = ["tests/"]
+
+[tool.isort]
+profile = "black"

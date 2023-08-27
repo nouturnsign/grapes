@@ -1,6 +1,6 @@
-import grapes
-
 import pytest
+
+import grapes
 
 
 def test_shortest_path_correctness():

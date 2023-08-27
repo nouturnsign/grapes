@@ -1,10 +1,11 @@
+"""Graph visualization configuration and rendering."""
+
 from typing import Any
 
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
-import numpy.typing as npt
 
 import json
 import logging
@@ -13,6 +14,7 @@ import os
 import moderngl
 import moderngl_window as mglw
 import numpy as np
+import numpy.typing as npt
 import pyrr
 from PIL import Image
 
@@ -22,22 +24,36 @@ mglw.setup_basic_logging(logging.WARNING)
 
 
 class RendererConfig(dict):
-    def __init__(self: Self, underlying_config: dict) -> None:
-        super().__init__(underlying_config)
+    """Wraps a raw JSON config file.
+
+    :param _underlying_config: The wrapped config.
+    :type _underlying_config: dict
+    """
+
+    def __init__(self: Self, _underlying_config: dict) -> None:
+        super().__init__(_underlying_config)
 
     def __getitem__(self: Self, __key: Any) -> Any:
+        """Try to get the item, raising a custom error if not found.
+
+        :param __key: Configuration option
+        :type __key: Any
+        :raises RendererInvalidInputError: Config does not contain the key.
+        :return: Configuration value
+        :rtype: Any
+        """
         if __key not in self:
             raise RendererInvalidInputError(f"Config is missing key={__key}")
         return super().__getitem__(__key)
 
 
-class GrapesRenderer(mglw.WindowConfig):
-    """Grapes's graph visualization renderer."""
+class GraphRenderer(mglw.WindowConfig):
+    """Graph visualization renderer."""
 
     gl_version = (3, 3)
-    """gl_version: Minimum version of 3.3."""
+    """gl_version: Minimum GL version of 3.3."""
     title = "grapes-graph"
-    """title: Window title set to \"grapes-graph\""""
+    """title: Window title set to \"grapes-graph\"."""
 
     def __init__(self: Self, **kwargs):
         super().__init__(**kwargs)
@@ -255,14 +271,14 @@ class GrapesRenderer(mglw.WindowConfig):
         if self.config_has_labels:
             mglw.logger.warning("Label support is currently limited.")
 
-            FONT_ASPECT_RATIO = 1238.0 / 2048.0
-            CHAR_OFFSET = 32
-            TEXTURE_PATH = os.path.join(
+            FONT_ASPECT_RATIO = 1238.0 / 2048.0  # noqa: N806
+            CHAR_OFFSET = 32  # noqa: N806
+            TEXTURE_PATH = os.path.join(  # noqa: N806
                 os.path.dirname(__file__), "font", "courier-prime-32-126.png"
             )
-            TEXTURE_FILE_SIZE = 95 * 1238 * 2048
-            TEXTURE_CHAR_MIN = 32
-            TEXTURE_CHAR_MAX = 126
+            TEXTURE_FILE_SIZE = 95 * 1238 * 2048  # noqa: N806
+            TEXTURE_CHAR_MIN = 32  # noqa: N806
+            TEXTURE_CHAR_MAX = 126  # noqa: N806
 
             # check this first to raise errors earlier
             char_count = np.char.str_len(self.label_data)
@@ -384,7 +400,7 @@ class GrapesRenderer(mglw.WindowConfig):
         )
 
     def render(self: Self, time, frametime):
-        """Renders the graph."""
+        """Render the graph."""
         self.ctx.clear(
             red=self.config_background_color[0] / 255,
             green=self.config_background_color[1] / 255,

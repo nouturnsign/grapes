@@ -1,3 +1,5 @@
+"""Errors related to graph algorithms and visualization."""
+
 from typing import Hashable
 
 try:

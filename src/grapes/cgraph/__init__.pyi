@@ -1,4 +1,6 @@
-"""Contains the Multigraph class, implementing algorithms and data structures
+"""Provides the underlying C extension.
+
+Contains the Multigraph class, implementing algorithms and data structures
 in C.
 """
 from typing import Optional
@@ -7,9 +9,9 @@ try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
-import numpy.typing as npt
 
 import numpy as np
+import numpy.typing as npt
 
 class Multigraph:
     """Underlying graph type.

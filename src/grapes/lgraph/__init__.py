@@ -1,11 +1,13 @@
-"""Contains the LabeledGraph and GrapesRenderer classes, implementing graph
+"""Provides a more Pythonic API.
+
+Contains the LabeledGraph and GrapesRenderer classes, implementing graph
 visualization and providing a thin Pythonic wrapper.
 """
 
 __all__ = [
     "LabeledGraph",
     "ShortestPathAlgorithm",
-    "GrapesRenderer",
+    "GraphRenderer",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
@@ -15,19 +17,14 @@ __all__ = [
     "RendererInvalidInputError",
 ]
 
-from .wrapper import (
-    LabeledGraph,
-    ShortestPathAlgorithm,
-)
-from .renderer import (
-    GrapesRenderer,
-)
 from .errors import (
-    GraphMissingNodeError,
-    GraphDuplicateNodeError,
-    SimpleGraphWithLoopError,
-    SimpleGraphWithDuplicateEdgeError,
     AlgorithmPreconditionError,
+    GraphDuplicateNodeError,
+    GraphMissingNodeError,
     NegativeCycleError,
     RendererInvalidInputError,
+    SimpleGraphWithDuplicateEdgeError,
+    SimpleGraphWithLoopError,
 )
+from .renderer import GraphRenderer
+from .wrapper import LabeledGraph, ShortestPathAlgorithm

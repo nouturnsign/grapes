@@ -1,3 +1,5 @@
+# ruff: noqa
+
 from typing import Generic, Hashable, Optional, TypeVar, Union
 
 try:
