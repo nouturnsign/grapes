@@ -36,3 +36,4 @@ for more info.
 *   more tests
 *   add drawing options
 *   implement immutability checks and buffer/pickle protocol
+*   provide `*View` classes for iterating over graph data
