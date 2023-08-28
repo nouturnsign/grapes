@@ -419,10 +419,12 @@ Multigraph_add_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
     if (add_directed_edge_noinc(self, u, v, weight) == -1) {
         return NULL;
     }
+    ++self->neighbor_count[u];
     if (!self->is_directed) {
         if (add_directed_edge_noinc(self, v, u, weight) == -1) {
             return NULL;
         }
+        ++self->neighbor_count[v];
     }
 
     ++self->edge_count;
@@ -462,7 +464,6 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
     }
     self->adj_list[u][self->neighbor_count[u]] = v;
     self->weight[u][self->neighbor_count[u]] = weight;
-    ++self->neighbor_count[u];
     return 0;
 }
 
