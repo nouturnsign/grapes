@@ -24,6 +24,9 @@ class Multigraph:
 
     .. note::
         Nodes are represented as 0-based indices.
+
+    .. warning::
+        Exceptions are currently undocumented for this class.
     """
 
     def __init__(self: Self, is_directed: bool, node_count: int = 0) -> None: ...
