@@ -201,7 +201,7 @@ static PyMethodDef Multigraph_methods[] = {
      "Add a node to the graph, returning the newest node."},
     {"add_edge", (PyCFunction) Multigraph_add_edge,
      METH_VARARGS | METH_KEYWORDS,
-     "Add an undirected edge to the graph given existing nodes."},
+     "Add an edge to the graph given existing nodes."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
     {"bellman_ford", (PyCFunction) Multigraph_bellman_ford,
