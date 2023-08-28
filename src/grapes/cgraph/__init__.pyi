@@ -32,6 +32,12 @@ class Multigraph:
 
         :rtype: int
         """
+    def get_nodes(self: Self) -> list[int]:
+        """Get the nodes in the graph.
+
+        :returns: List of nodes
+        :rtype: list[int]
+        """
     def get_edge_count(self: Self) -> int:
         """Get the number of edges in the graph.
 

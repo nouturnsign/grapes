@@ -3,6 +3,7 @@
 
 #define PI 3.14159265358979323846
 
+#define GRAPES_NO_NODE -1
 #define GRAPES_FALSE 0
 #define GRAPES_TRUE 1
 #define GRAPES_RED 0

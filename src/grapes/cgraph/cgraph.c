@@ -58,6 +58,7 @@ struct MultigraphObject_s {
                               // (max_neighbor_count[i] = current maximum
                               // number of neighbors allocated to node i)
     Py_ssize_t node_count;
+    Py_ssize_t node_end;
     Py_ssize_t max_node_count;  // current maximum number of nodes allocated
     double   **weight;          // list of weight lists (by index)
     Py_ssize_t edge_count;
@@ -100,6 +101,7 @@ Multigraph_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (self != NULL) {
         self->adj_list = NULL;
         self->node_count = 0;
+        self->node_end = 0;
         self->max_node_count = 0;
         self->neighbor_count = NULL;
         self->max_neighbor_count = NULL;
@@ -186,6 +188,8 @@ Multigraph_init(MultigraphObject *self, PyObject *args, PyObject *kwds)
 static PyMethodDef Multigraph_methods[] = {
     {"get_node_count", (PyCFunction) Multigraph_get_node_count, METH_NOARGS,
      "Return the number of nodes in the graph."},
+    {"get_nodes", (PyCFunction) Multigraph_get_nodes, METH_NOARGS,
+     "Return the nodes in the graph."},
     {"get_edge_count", (PyCFunction) Multigraph_get_edge_count, METH_NOARGS,
      "Return the number of edges in the graph."},
     {"get_edges", (PyCFunction) Multigraph_get_edges, METH_NOARGS,
@@ -216,6 +220,33 @@ static PyObject *
 Multigraph_get_node_count(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 {
     return PyLong_FromSsize_t(self->node_count);
+}
+
+static PyObject *
+Multigraph_get_nodes(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
+{
+    PyObject *retvalue = NULL;
+    PyObject *nodes = NULL;
+
+    nodes = PyList_New(self->node_count);
+    if (nodes == NULL) {
+        PyErr_SetString(PyExc_MemoryError, "Unable to initialize nodes list");
+        goto err;
+    }
+
+    Py_ssize_t i = 0;
+    for (Py_ssize_t u = 0; u < self->node_end; ++u) {
+        if (self->neighbor_count[u] == GRAPES_NO_NODE) {
+            continue;
+        }
+        PyList_SET_ITEM(nodes, i++, u);
+    }
+
+    retvalue = nodes;
+    Py_INCREF(nodes);
+err:
+    Py_XDECREF(nodes);
+    return retvalue;
 }
 
 static PyObject *
@@ -361,6 +392,7 @@ Multigraph_add_node(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
         }
     }
 
+    ++self->node_end;
     return PyLong_FromSsize_t(self->node_count++);
 }
 
