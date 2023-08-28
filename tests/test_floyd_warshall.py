@@ -45,3 +45,5 @@ def test_floyd_warshall_errors():
         g.shortest_path(1, 2, grapes.ShortestPathAlgorithm.FLOYD_WARSHALL)
     g.add_node(2)
     g.add_edge(1, 2, weight=-1.0)
+    with pytest.raises(grapes.NegativeCycleError):
+        g.shortest_path(1, 2, grapes.ShortestPathAlgorithm.FLOYD_WARSHALL)
