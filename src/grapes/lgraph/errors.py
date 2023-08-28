@@ -30,6 +30,19 @@ class GraphDuplicateNodeError(Exception):
         super().__init__(f"Graph has a duplicate of the following node: {label=}")
 
 
+class GraphMissingEdgeError(Exception):
+    """Raised when a graph is missing the requested edge.
+
+    :param u_label: Node.
+    :type u_label: Hashable
+    :param v_label: Other node.
+    :type v_label: Hashable
+    """
+
+    def __init__(self: Self, u_label: Hashable, v_label: Hashable) -> None:
+        super().__init__(f"Graph is missing the following edge: {u_label=}, {v_label=}")
+
+
 class SimpleGraphWithLoopError(Exception):
     """Raised when a simple graph contains a self loop.
 

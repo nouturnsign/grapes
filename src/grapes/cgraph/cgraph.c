@@ -202,6 +202,8 @@ static PyMethodDef Multigraph_methods[] = {
     {"add_edge", (PyCFunction) Multigraph_add_edge,
      METH_VARARGS | METH_KEYWORDS,
      "Add an edge to the graph given existing nodes."},
+    {"remove_edge", (PyCFunction) Multigraph_remove_edge,
+     METH_VARARGS | METH_KEYWORDS, "Remove an edge."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
     {"bellman_ford", (PyCFunction) Multigraph_bellman_ford,
@@ -237,10 +239,16 @@ Multigraph_get_nodes(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
 
     Py_ssize_t i = 0;
     for (Py_ssize_t u = 0; u < self->node_end; ++u) {
-        if (self->neighbor_count[u] == GRAPES_NO_NODE) {
+        if (self->neighbor_count[u] == GRAPES_NO_NODE ||
+            self->neighbor_count[u] == GRAPES_INIT_NODE) {
             continue;
         }
-        PyList_SET_ITEM(nodes, i++, u);
+        PyList_SET_ITEM(nodes, i, PyLong_FromSsize_t(u));
+        if (++i == self->node_count) {
+            retvalue = nodes;
+            Py_INCREF(nodes);
+            goto err;
+        }
     }
 
     retvalue = nodes;
@@ -283,7 +291,11 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                 goto err;
             }
             PyList_SET_ITEM(edges, i, uv);
-            ++i;
+            if (++i == self->edge_count) {
+                retvalue = edges;
+                Py_INCREF(edges);
+                goto err;
+            }
         }
     }
     retvalue = edges;
@@ -348,7 +360,7 @@ Multigraph_add_node(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                          (void *) self->adj_list);
             return NULL;
         }
-        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i) {
+        for (Py_ssize_t i = self->node_end; i < self->max_node_count; ++i) {
             self->adj_list[i] = NULL;
         }
 
@@ -360,7 +372,7 @@ Multigraph_add_node(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                          (void *) self->weight);
             return NULL;
         }
-        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i) {
+        for (Py_ssize_t i = self->node_end; i < self->max_node_count; ++i) {
             self->weight[i] = NULL;
         }
 
@@ -374,8 +386,9 @@ Multigraph_add_node(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                 (void *) self->neighbor_count);
             return NULL;
         }
-        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i) {
-            self->neighbor_count[i] = 0;
+
+        for (Py_ssize_t i = self->node_end; i < self->max_node_count; ++i) {
+            self->neighbor_count[i] = GRAPES_INIT_NODE;
         }
 
         self->max_neighbor_count =
@@ -388,12 +401,13 @@ Multigraph_add_node(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
                 (void *) self->max_neighbor_count);
             return NULL;
         }
-        for (Py_ssize_t i = self->node_count; i < self->max_node_count; ++i) {
+        for (Py_ssize_t i = self->node_end; i < self->max_node_count; ++i) {
             self->max_neighbor_count[i] = 0;
         }
     }
 
     ++self->node_count;
+    self->neighbor_count[self->node_end] = 0;
     return PyLong_FromSsize_t(self->node_end++);
 }
 
@@ -427,12 +441,23 @@ Multigraph_add_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
     if (add_directed_edge_noinc(self, u, v, weight) == -1) {
         return NULL;
     }
-    ++self->neighbor_count[u];
+    if (self->neighbor_count[u] == GRAPES_INIT_NODE) {
+        self->neighbor_count[u] = 1;
+    }
+    else {
+        ++self->neighbor_count[u];
+    }
+
     if (!self->is_directed) {
         if (add_directed_edge_noinc(self, v, u, weight) == -1) {
             return NULL;
         }
-        ++self->neighbor_count[v];
+        if (self->neighbor_count[v] == GRAPES_INIT_NODE) {
+            self->neighbor_count[v] = 1;
+        }
+        else {
+            ++self->neighbor_count[v];
+        }
     }
 
     ++self->edge_count;
@@ -472,6 +497,69 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
     }
     self->adj_list[u][self->neighbor_count[u]] = v;
     self->weight[u][self->neighbor_count[u]] = weight;
+    return 0;
+}
+
+static PyObject *
+Multigraph_remove_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"u", "v", NULL};
+    Py_ssize_t   u, v;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "nn", kwlist, &u, &v)) {
+        return NULL;
+    }
+
+    if (u < 0 || u >= self->node_end || v < 0 || v >= self->node_end ||
+        self->neighbor_count[u] == GRAPES_INIT_NODE ||
+        self->neighbor_count[v] == GRAPES_INIT_NODE) {
+        PyErr_Format(PyExc_ValueError,
+                     "u and v should be existing nodes. Multigraph has "
+                     "node_count=%zd but given u=%zd and v=%zd",
+                     self->node_end, u, v);
+        return NULL;
+    }
+
+    if (self->neighbor_count[u] == GRAPES_NO_NODE ||
+        self->neighbor_count[v] == GRAPES_NO_NODE) {
+        PyErr_Format(PyExc_ValueError,
+                     "Either u=%zd or v=%zd was removed from graph.", u, v);
+        return NULL;
+    }
+
+    if (remove_directed_edge_nodec(self->adj_list, self->neighbor_count, u,
+                                   v) == -1) {
+        return NULL;
+    }
+    --self->neighbor_count[u];
+    if (!self->is_directed) {
+        if (remove_directed_edge_nodec(self->adj_list, self->neighbor_count, v,
+                                       u) == -1) {
+            return NULL;
+        }
+        --self->neighbor_count[v];
+    }
+    --self->edge_count;
+    Py_RETURN_NONE;
+}
+
+int
+remove_directed_edge_nodec(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
+                           Py_ssize_t u, Py_ssize_t v)
+{
+    Py_ssize_t found = -1;
+    for (Py_ssize_t j = 0; j < neighbor_count[u]; ++u) {
+        if (adj_list[u][j] == v) {
+            found = j;
+            break;
+        }
+    }
+    if (found == -1) {
+        PyErr_Format(PyExc_ValueError,
+                     "Edge u->v does not exist with u=%zd, v=%zd", u, v);
+        return -1;
+    }
+    adj_list[u][found] = adj_list[u][neighbor_count[u] - 1];
     return 0;
 }
 

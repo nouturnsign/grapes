@@ -21,6 +21,7 @@ from .colors import BLACK, TABLEAU_BLUE, TRANSPARENT
 from .errors import (
     AlgorithmPreconditionError,
     GraphDuplicateNodeError,
+    GraphMissingEdgeError,
     GraphMissingNodeError,
     NegativeCycleError,
     SimpleGraphWithDuplicateEdgeError,
@@ -206,6 +207,27 @@ class LabeledGraph:
         )
         if weight < 0:
             self._has_negative_weight = True
+
+    def remove_edge(self: Self, u_label: Hashable, v_label: Hashable) -> None:
+        """Remove an edge between two nodes.
+
+        :param u_label: Begin (source) node
+        :type u_label: Hashable
+        :param v_label: End (destination) node
+        :type v_label: Hashable
+        :raises GraphMissingNodeError: Graph is missing one of the nodes.
+        :raises GraphMissingEdgeError: Graph is missing the given edge.
+        """
+        if u_label not in self._label_data:
+            raise GraphMissingNodeError(u_label)
+        if v_label not in self._label_data:
+            raise GraphMissingNodeError(v_label)
+        try:
+            self._underlying_graph.remove_edge(
+                self._label_data[u_label], self._label_data[v_label]
+            )
+        except ValueError:
+            raise GraphMissingEdgeError(u_label, v_label)
 
     def shortest_path(
         self: Self,

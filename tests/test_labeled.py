@@ -14,6 +14,7 @@ def test_labeled():
     g.add_node("D")
     g.add_node("E")
 
+    assert g._underlying_graph.get_nodes() == [0, 1, 2, 3, 4]
     assert g.nodes == ["A", "B", "C", "D", "E"]
 
     with pytest.raises(grapes.GraphDuplicateNodeError):
@@ -24,6 +25,8 @@ def test_labeled():
     g.add_edge("B", "C", weight=2.5)
     g.add_edge("D", "E", weight=1.0)
 
+    assert g._underlying_graph.get_edge_count() == 4
+    assert g._underlying_graph.get_edges() == [(0, 1), (0, 2), (1, 2), (3, 4)]
     assert g.edges == {
         ("A", "B"): 0.5,
         ("A", "C"): 4.0,
@@ -49,6 +52,17 @@ def test_labeled():
     assert not g.is_connected()
     assert not g.is_bipartite()
     assert sorted(g.get_component_sizes()) == [2, 3]
+
+    g.remove_edge("D", "E")
+
+    assert g._underlying_graph.get_edge_count() == 3
+    assert g._underlying_graph.get_edges() == [(0, 1), (0, 2), (1, 2)]
+    assert g.edges == {
+        ("A", "B"): 0.5,
+        ("A", "C"): 4.0,
+        ("B", "C"): 2.5,
+    }
+    assert sorted(g.get_component_sizes()) == [1, 1, 3]
 
 
 def test_labeled_conditions():

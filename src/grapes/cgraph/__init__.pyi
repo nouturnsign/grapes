@@ -83,6 +83,14 @@ class Multigraph:
         :param weight: weight of edge, defaults to 1.0
         :type weight: float
         """
+    def remove_edge(self: Self, u: int, v: int) -> None:
+        """Remove an existing edge between two nodes.
+
+        :param u: node
+        :type u: int
+        :param v: node
+        :type v: int
+        """
     def dijkstra(self: Self, srcs: list[int], dst: int) -> tuple[list[int], list[int]]:
         """Multiple source Dijkstra's algorithm.
 
