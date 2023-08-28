@@ -247,7 +247,7 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
             uv = Py_BuildValue("(nn)", u, v);
             if (uv == NULL) {
                 PyErr_Format(PyExc_TypeError,
-                             "Unable to format uv given u=%ld and v=%ld", u,
+                             "Unable to format uv given u=%zd and v=%zd", u,
                              v);
                 goto err;
             }
@@ -380,7 +380,7 @@ Multigraph_add_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
     if (u < 0 || u >= self->node_count || v < 0 || v >= self->node_count) {
         PyErr_Format(PyExc_ValueError,
                      "u and v should be existing nodes. Multigraph has "
-                     "node_count=%ld but given u=%ld and v=%ld",
+                     "node_count=%zd but given u=%zd and v=%zd",
                      self->node_count, u, v);
         return NULL;
     }
@@ -414,7 +414,7 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
         if (self->adj_list[u] == NULL) {
             PyErr_Format(PyExc_MemoryError,
                          "Unable to realloc adj_list[u] at memory address %p "
-                         "with u=%ld",
+                         "with u=%zd",
                          (void *) self->adj_list[u], u);
             return -1;
         }
@@ -424,7 +424,7 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
         if (self->weight[u] == NULL) {
             PyErr_Format(PyExc_MemoryError,
                          "Unable to realloc weight[u] at memory address %p "
-                         "with u=%ld",
+                         "with u=%zd",
                          (void *) self->weight[u], u);
             return -1;
         }
