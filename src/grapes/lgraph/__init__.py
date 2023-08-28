@@ -10,6 +10,7 @@ __all__ = [
     "GraphRenderer",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
+    "GraphMissingEdgeError",
     "SimpleGraphWithLoopError",
     "SimpleGraphWithDuplicateEdgeError",
     "AlgorithmPreconditionError",
@@ -20,6 +21,7 @@ __all__ = [
 from .errors import (
     AlgorithmPreconditionError,
     GraphDuplicateNodeError,
+    GraphMissingEdgeError,
     GraphMissingNodeError,
     NegativeCycleError,
     RendererInvalidInputError,

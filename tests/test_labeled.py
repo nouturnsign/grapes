@@ -64,6 +64,15 @@ def test_labeled():
     }
     assert sorted(g.get_component_sizes()) == [1, 1, 3]
 
+    with pytest.raises(grapes.GraphMissingNodeError):
+        g.remove_edge("F", "A")
+
+    with pytest.raises(grapes.GraphMissingNodeError):
+        g.remove_edge("A", "G")
+
+    with pytest.raises(grapes.GraphMissingEdgeError):
+        g.remove_edge("D", "E")
+
 
 def test_labeled_conditions():
     g = grapes.LabeledGraph(is_directed=False, is_simple=True)

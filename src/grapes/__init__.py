@@ -5,6 +5,7 @@ __all__ = [
     "LabeledGraph",
     "ShortestPathAlgorithm",
     "GraphRenderer",
+    "GraphMissingEdgeError",
     "GraphMissingNodeError",
     "GraphDuplicateNodeError",
     "SimpleGraphWithLoopError",
@@ -19,6 +20,7 @@ from .cgraph import Multigraph
 from .lgraph import (
     AlgorithmPreconditionError,
     GraphDuplicateNodeError,
+    GraphMissingEdgeError,
     GraphMissingNodeError,
     GraphRenderer,
     LabeledGraph,
