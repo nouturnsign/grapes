@@ -122,7 +122,7 @@ Multigraph_init(MultigraphObject *self, PyObject *args, PyObject *kwds)
 
     if (node_count < 0) {
         PyErr_Format(PyExc_ValueError,
-                     "node_count should be nonnegative, but given %ld",
+                     "node_count should be nonnegative, but given %zd",
                      node_count);
         return -1;
     }
