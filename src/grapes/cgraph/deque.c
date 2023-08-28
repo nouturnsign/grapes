@@ -149,15 +149,3 @@ Deque_is_empty(Deque *deque)
 {
     return (deque->head == NULL && deque->tail == NULL);
 }
-
-void
-Deque_print(Deque *deque)
-{
-    printf("deque values=");
-    DequeNode *curr = deque->head;
-    while (curr != NULL) {
-        printf("%ld, ", curr->value);
-        curr = curr->next;
-    }
-    printf("\n");
-}
