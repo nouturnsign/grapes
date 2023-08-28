@@ -18,6 +18,8 @@ Then, it can be imported.
 
    import grapes
 
+.. _examples:
+
 Examples
 --------
 

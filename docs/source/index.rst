@@ -1,15 +1,10 @@
-.. grapes documentation master file, created by
-   sphinx-quickstart on Mon Jul 24 13:09:01 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to grapes's documentation!
 ==================================
 
 **grapes-graph** is a WIP Python C extension for graphs. 
 
 Check out the :doc:`usage` section for further information, including how to 
-:ref:`install <installation>` the project.
+:ref:`install <installation>` the project and :ref:`examples <examples>`.
 
 Contents
 --------
@@ -17,7 +12,7 @@ Contents
 .. toctree::
 
    usage
-   autoapi/grapes/index
+   api
 
 Indices and tables
 ==================

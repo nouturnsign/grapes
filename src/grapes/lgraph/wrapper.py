@@ -49,8 +49,8 @@ class LabeledGraph:
     """A graph with labeled nodes.
 
     Represents a graph, allowing for nodes to be represented by label. The
-    class is a thin wrapper for :class:`grapes.Multigraph` and
-    :class:`grapes.GrapesRenderer`.
+    class is a wrapper over :class:`grapes.Multigraph` and
+    :class:`grapes.GraphRenderer`.
 
     :param is_directed: Whether or not the graph is directed, defaults to False
     :type is_directed: bool
@@ -226,7 +226,7 @@ class LabeledGraph:
         :raises AlgorithmPreconditionError: The preconditions for the given
             algorithm have not been met.
         :raises NegativeCycleError: A subclass of
-            :exception:`AlgorithmPreconditionError` denoting a negative-weight
+            :class:`AlgorithmPreconditionError` denoting a negative-weight
             cycle, or an infinitely short path.
         :return: List of nodes, starting from `src_label` and ending with
             `dst_label`. Returns an empty list if no path found.

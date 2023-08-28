@@ -32,7 +32,7 @@ where = ["src"]
 src = ["src"]
 select = ["E", "F", "I", "N", "D"]
 ignore = ["D107", "D203", "D213"]
-extend-exclude = ["tests/"]
+extend-exclude = ["docs/", "tests/"]
 
 [tool.isort]
 profile = "black"
