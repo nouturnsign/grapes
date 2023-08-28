@@ -237,14 +237,13 @@ Multigraph_get_edges(MultigraphObject *self, PyObject *Py_UNUSED(ignored))
     }
 
     Py_ssize_t i = 0;
-    PyObject  *uv;
     for (Py_ssize_t u = 0; u < self->node_count; ++u) {
         for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
             Py_ssize_t v = self->adj_list[u][j];
             if (!self->is_directed && u > v) {
                 continue;
             }
-            uv = Py_BuildValue("(nn)", u, v);
+            PyObject *uv = Py_BuildValue("(nn)", u, v);
             if (uv == NULL) {
                 PyErr_Format(PyExc_TypeError,
                              "Unable to format uv given u=%zd and v=%zd", u,
