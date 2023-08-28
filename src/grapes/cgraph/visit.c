@@ -7,14 +7,14 @@
 
 void
 visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-               Py_ssize_t node_count, Py_ssize_t directed_edge_count,
+               Py_ssize_t node_end, Py_ssize_t directed_edge_count,
                Py_ssize_t *srcs, Py_ssize_t src_count, double **weight,
                double *dist, Py_ssize_t *prev)
 {
     int     *visited = NULL;
     MinHeap *heap = NULL;
 
-    visited = malloc(sizeof(*visited) * node_count);
+    visited = malloc(sizeof(*visited) * node_end);
     if (visited == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate visited");
         goto err;
@@ -26,10 +26,15 @@ visit_dijkstra(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         goto err;
     }
 
-    for (Py_ssize_t i = 0; i < node_count; ++i) {
+    for (Py_ssize_t i = 0; i < node_end; ++i) {
         dist[i] = INFINITY;
         visited[i] = GRAPES_FALSE;
-        prev[i] = node_count;
+        if (neighbor_count[i] == GRAPES_NO_NODE) {
+            prev[i] = GRAPES_NO_NODE;
+        }
+        else {
+            prev[i] = node_end;
+        }
     }
 
     for (Py_ssize_t i = 0; i < src_count; ++i) {
@@ -80,9 +85,8 @@ err:
 
 int
 visit_bellman_ford(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-                   Py_ssize_t node_count, Py_ssize_t *srcs,
-                   Py_ssize_t src_count, double **weight, double *dist,
-                   Py_ssize_t *prev)
+                   Py_ssize_t node_end, Py_ssize_t *srcs, Py_ssize_t src_count,
+                   double **weight, double *dist, Py_ssize_t *prev)
 {
     // SPFA variant + SLF technique
     // https://en.wikipedia.org/wiki/Shortest_path_faster_algorithm#Optimization_techniques
@@ -97,21 +101,21 @@ visit_bellman_ford(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         goto err;
     }
 
-    in_deque = malloc(sizeof(*in_deque) * node_count);
+    in_deque = malloc(sizeof(*in_deque) * node_end);
     if (in_deque == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate in_deque");
         goto err;
     }
 
-    count = malloc(sizeof(*count) * node_count);
+    count = malloc(sizeof(*count) * node_end);
     if (count == NULL) {
         PyErr_Format(PyExc_MemoryError, "Failed to allocate count");
         goto err;
     }
 
-    for (Py_ssize_t u = 0; u < node_count; ++u) {
+    for (Py_ssize_t u = 0; u < node_end; ++u) {
         dist[u] = INFINITY;
-        prev[u] = node_count;
+        prev[u] = node_end;
         in_deque[u] = GRAPES_FALSE;
         count[u] = 0;
     }
@@ -140,7 +144,7 @@ visit_bellman_ford(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
                     continue;
                 }
 
-                if (++count[v] == node_count) {
+                if (++count[v] == node_end) {
                     retvalue = 1;
                     goto err;
                 }
@@ -169,12 +173,12 @@ err:
 
 int
 visit_floyd_warshall(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-                     Py_ssize_t node_count, double **weight, double **dist,
+                     Py_ssize_t node_end, double **weight, double **dist,
                      Py_ssize_t **prev)
 {
     int retvalue = -1;
 
-    for (Py_ssize_t u = 0; u < node_count; ++u) {
+    for (Py_ssize_t u = 0; u < node_end; ++u) {
         dist[u][u] = 0;
         prev[u][u] = u;
         for (Py_ssize_t j = 0; j < neighbor_count[u]; ++j) {
@@ -184,9 +188,9 @@ visit_floyd_warshall(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         }
     }
 
-    for (Py_ssize_t k = 0; k < node_count; ++k) {
-        for (Py_ssize_t i = 0; i < node_count; ++i) {
-            for (Py_ssize_t j = 0; j < node_count; ++j) {
+    for (Py_ssize_t k = 0; k < node_end; ++k) {
+        for (Py_ssize_t i = 0; i < node_end; ++i) {
+            for (Py_ssize_t j = 0; j < node_end; ++j) {
                 if (dist[i][j] > dist[i][k] + dist[k][j]) {
                     dist[i][j] = dist[i][k] + dist[k][j];
                     prev[i][j] = prev[k][j];
@@ -195,7 +199,7 @@ visit_floyd_warshall(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
         }
     }
 
-    for (Py_ssize_t i = 0; i < node_count; ++i) {
+    for (Py_ssize_t i = 0; i < node_end; ++i) {
         if (dist[i][i] < 0) {
             retvalue = 1;
             goto err;
