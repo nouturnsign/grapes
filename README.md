@@ -32,6 +32,7 @@ Courier Prime, a font licensed under the SIL Open Font License. See https://quot
 for more info.
 
 ## TODO
+*   more basic graph operations (remove node/edge, \[in/out\]degree, etc)
 *   more algorithms
 *   more tests
 *   add drawing options
