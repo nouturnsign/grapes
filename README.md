@@ -4,12 +4,13 @@
         <picture>
             <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-dark.svg">
             <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg">
-            <img alt="Grapes logo" src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg">
+            <img alt="Grapes logo" src="https://raw.githubusercontent.com/nouturnsign/grapes/main/logo-light.svg" width="75%">
         </picture>
     </a>
     <br />
     <br />
-    <a href="https://pypi.org/project/grapes-graph/"><img src="https://img.shields.io/pypi/v/grapes-graph.svg?style=flat&logo=pypi" alt="pypi"></a>
+    <a href="https://www.python.org/"><img src="https://img.shields.io/pypi/pyversions/grapes-graph" alt="pypi Python version"></a>
+    <a href="https://pypi.org/project/grapes-graph/"><img src="https://img.shields.io/pypi/v/grapes-graph.svg?style=flat&logo=pypi" alt="pypi package version"></a>
     <a href="https://grapes-graph.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/grapes-graph/badge/?version=latest" alt="Documentation Status" /></a>
     <a href="https://github.com/nouturnsign/grapes/actions/workflows/tests.yml"><img src="https://github.com/nouturnsign/grapes/actions/workflows/.github/workflows/tests.yml/badge.svg" alt="Test Status"></a>
     <a href="https://codecov.io/gh/nouturnsign/grapes"><img src="https://codecov.io/gh/nouturnsign/grapes/graph/badge.svg?token=ET63SAOWJO" alt="codecov"></a>
