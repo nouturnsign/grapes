@@ -1094,6 +1094,7 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     PyObject    *retvalue = NULL;
     PyObject    *layout = NULL;
     npy_float32 *raw_layout = NULL;
+    PyObject    *raw_layout_capsule = NULL;
 
     static char *kwlist[] = {"radius", "initial_angle", "x_center", "y_center",
                              NULL};
@@ -1128,9 +1129,27 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
         goto err;
     }
 
+    raw_layout_capsule =
+        PyCapsule_New((void *) raw_layout, NULL,
+                      (PyCapsule_Destructor) raw_layout_capsule_cleanup);
+    if (raw_layout_capsule == NULL) {
+        goto err;
+    }
+    if (PyArray_SetBaseObject((PyArrayObject *) layout, raw_layout_capsule) ==
+        -1) {
+        goto err;
+    }
+
     retvalue = layout;
     Py_INCREF(layout);
 err:
     Py_XDECREF(layout);
     return retvalue;
+}
+
+void
+raw_layout_capsule_cleanup(PyObject *capsule)
+{
+    void *memory = PyCapsule_GetPointer(capsule, NULL);
+    free(memory);
 }

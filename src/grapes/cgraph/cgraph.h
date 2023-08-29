@@ -58,5 +58,6 @@ int add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
 void remove_directed_edge(Py_ssize_t **adj_list, double **weight,
                           Py_ssize_t *neighbor_count, Py_ssize_t u,
                           Py_ssize_t v);
+void raw_layout_capsule_cleanup(PyObject *capsule);
 
 #endif  // GRAPES_GRAPES_CGRAPH_CGRAPH_H_
