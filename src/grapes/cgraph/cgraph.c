@@ -1130,7 +1130,7 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     }
 
     raw_layout_capsule =
-        PyCapsule_New((void *) raw_layout, NULL,
+        PyCapsule_New((void *) raw_layout, "grapes.raw_layout",
                       (PyCapsule_Destructor) raw_layout_capsule_cleanup);
     if (raw_layout_capsule == NULL) {
         goto err;
