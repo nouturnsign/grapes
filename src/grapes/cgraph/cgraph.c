@@ -1131,7 +1131,6 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
     retvalue = layout;
     Py_INCREF(layout);
 err:
-    free(raw_layout);
     Py_XDECREF(layout);
     return retvalue;
 }
