@@ -86,6 +86,12 @@ class Multigraph:
         :param weight: weight of edge, defaults to 1.0
         :type weight: float
         """
+    def remove_node(self: Self, u: int) -> None:
+        """Remove an existing node.
+
+        :param u: node
+        :type u: int
+        """
     def remove_edge(self: Self, u: int, v: int) -> None:
         """Remove an existing edge between two nodes.
 

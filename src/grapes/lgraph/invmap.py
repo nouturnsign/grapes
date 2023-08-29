@@ -49,8 +49,5 @@ class InvertibleMapping(Generic[K1, K2]):
     def keys(self: Self) -> KeysView[K1]:
         return self._original_mapping.keys()
 
-    def values(self: Self) -> ValuesView[K2]:
-        return self._inverse_mapping.keys()
-
-    def items(self: Self) -> ItemsView[K1, K2]:
-        return self._original_mapping.values()
+    def pop(self: Self, key: K1) -> None:
+        self._inverse_mapping.pop(self._original_mapping.pop(key))

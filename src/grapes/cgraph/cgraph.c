@@ -202,6 +202,8 @@ static PyMethodDef Multigraph_methods[] = {
     {"add_edge", (PyCFunction) Multigraph_add_edge,
      METH_VARARGS | METH_KEYWORDS,
      "Add an edge to the graph given existing nodes."},
+    {"remove_node", (PyCFunction) Multigraph_remove_node,
+     METH_VARARGS | METH_KEYWORDS, "Remove a node."},
     {"remove_edge", (PyCFunction) Multigraph_remove_edge,
      METH_VARARGS | METH_KEYWORDS, "Remove an edge."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
@@ -501,6 +503,60 @@ add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
 }
 
 static PyObject *
+Multigraph_remove_node(MultigraphObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"u", NULL};
+    Py_ssize_t   u;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &u)) {
+        return NULL;
+    }
+
+    if (u < 0 || u >= self->node_end ||
+        self->neighbor_count[u] == GRAPES_INIT_NODE) {
+        PyErr_Format(PyExc_ValueError,
+                     "u should be an existing node. Multigraph has "
+                     "node_count=%zd but given u=%zd",
+                     self->node_end, u);
+        return NULL;
+    }
+
+    if (self->neighbor_count[u] == GRAPES_NO_NODE) {
+        PyErr_Format(PyExc_ValueError, "u=%zd was already removed from graph.",
+                     u);
+        return NULL;
+    }
+
+    --self->node_count;
+    self->edge_count -= self->neighbor_count[u];
+    self->neighbor_count[u] = GRAPES_NO_NODE;
+    free(self->adj_list[u]);
+    self->adj_list[u] = NULL;
+    free(self->weight[u]);
+    self->weight[u] = NULL;
+
+    for (Py_ssize_t i = 0; i < self->node_end; ++i) {
+        if (self->neighbor_count[i] == GRAPES_NO_NODE ||
+            self->neighbor_count[i] == GRAPES_INIT_NODE) {
+            continue;
+        }
+        for (Py_ssize_t j = 0; j < self->neighbor_count[i]; ++j) {
+            Py_ssize_t v = self->adj_list[i][j];
+            if (v == u) {
+                remove_directed_edge(self->adj_list, self->weight,
+                                     self->neighbor_count, i, j);
+                if (self->is_directed) {
+                    --self->edge_count;
+                }
+                break;
+            }
+        }
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 Multigraph_remove_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"u", "v", NULL};
@@ -527,40 +583,50 @@ Multigraph_remove_edge(MultigraphObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    if (remove_directed_edge_nodec(self->adj_list, self->neighbor_count, u,
-                                   v) == -1) {
+    short found = GRAPES_FALSE;
+    for (Py_ssize_t j = 0; j < self->neighbor_count[u]; ++j) {
+        if (self->adj_list[u][j] == v) {
+            remove_directed_edge(self->adj_list, self->weight,
+                                 self->neighbor_count, u, j);
+            found = GRAPES_TRUE;
+            break;
+        }
+    }
+    if (!found) {
+        PyErr_Format(PyExc_ValueError,
+                     "Edge u->v does not exist with u=%zd, v=%zd", u, v);
         return NULL;
     }
-    --self->neighbor_count[u];
+
     if (!self->is_directed) {
-        if (remove_directed_edge_nodec(self->adj_list, self->neighbor_count, v,
-                                       u) == -1) {
+        found = GRAPES_FALSE;
+        for (Py_ssize_t i = 0; i < self->neighbor_count[v]; ++i) {
+            if (self->adj_list[v][i] == u) {
+                remove_directed_edge(self->adj_list, self->weight,
+                                     self->neighbor_count, v, i);
+                found = GRAPES_TRUE;
+                break;
+            }
+        }
+        if (!found) {
+            PyErr_Format(PyExc_ValueError,
+                         "Directed edge v->u does not exist with v=%zd, u=%zd",
+                         v, u);
             return NULL;
         }
-        --self->neighbor_count[v];
     }
     --self->edge_count;
     Py_RETURN_NONE;
 }
 
-int
-remove_directed_edge_nodec(Py_ssize_t **adj_list, Py_ssize_t *neighbor_count,
-                           Py_ssize_t u, Py_ssize_t v)
+void
+remove_directed_edge(Py_ssize_t **adj_list, double **weight,
+                     Py_ssize_t *neighbor_count, Py_ssize_t u, Py_ssize_t j)
 {
-    Py_ssize_t found = -1;
-    for (Py_ssize_t j = 0; j < neighbor_count[u]; ++u) {
-        if (adj_list[u][j] == v) {
-            found = j;
-            break;
-        }
-    }
-    if (found == -1) {
-        PyErr_Format(PyExc_ValueError,
-                     "Edge u->v does not exist with u=%zd, v=%zd", u, v);
-        return -1;
-    }
-    adj_list[u][found] = adj_list[u][neighbor_count[u] - 1];
-    return 0;
+    --neighbor_count[u];
+    adj_list[u][j] = adj_list[u][neighbor_count[u]];
+    weight[u][j] = weight[u][neighbor_count[u]];
+    return;
 }
 
 static PyObject *
@@ -937,14 +1003,15 @@ Multigraph_get_component_sizes(MultigraphObject *self,
                      (void *) visited);
         goto err;
     }
-    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
+    for (Py_ssize_t i = 0; i < self->node_end; ++i) {
         sizes[i] = 0;
         visited[i] = GRAPES_FALSE;
     }
 
     Py_ssize_t count = 0;
-    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
-        if (self->neighbor_count[i] == GRAPES_NO_NODE) {
+    for (Py_ssize_t i = 0; i < self->node_end; ++i) {
+        if (self->neighbor_count[i] == GRAPES_NO_NODE ||
+            self->neighbor_count[i] == GRAPES_INIT_NODE) {
             continue;
         }
         if (!visited[i]) {
@@ -1047,16 +1114,11 @@ Multigraph_compute_circular_layout(MultigraphObject *self, PyObject *args,
         goto err;
     }
 
-    Py_ssize_t i = 0;
-    for (Py_ssize_t u = 0; i < self->node_end; ++u) {
-        if (self->neighbor_count[u] == GRAPES_NO_NODE) {
-            continue;
-        }
+    for (Py_ssize_t i = 0; i < self->node_count; ++i) {
         double theta =
             ((double) i / self->node_count) * 2 * PI + initial_angle;
         raw_layout[i * 2 + 0] = (npy_float32) radius * cos(theta) + x_center;
         raw_layout[i * 2 + 1] = (npy_float32) radius * sin(theta) + y_center;
-        ++i;
     }
 
     const npy_intp dims[2] = {self->node_count, 2};

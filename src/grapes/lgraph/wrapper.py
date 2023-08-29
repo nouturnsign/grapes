@@ -208,6 +208,18 @@ class LabeledGraph:
         if weight < 0:
             self._has_negative_weight = True
 
+    def remove_node(self: Self, label: Hashable) -> None:
+        """Remove a node.
+
+        :param label: Node
+        :type label: Hashable
+        :raises GraphMissingNodeError: Graph is missing the nodes.
+        """
+        if label not in self._label_data:
+            raise GraphMissingNodeError(label)
+        self._underlying_graph.remove_node(self._label_data[label])
+        self._label_data.pop(label)
+
     def remove_edge(self: Self, u_label: Hashable, v_label: Hashable) -> None:
         """Remove an edge between two nodes.
 
@@ -444,9 +456,18 @@ class LabeledGraph:
             tempfile.NamedTemporaryFile("w+b", delete=False) as label_data,
             tempfile.NamedTemporaryFile("w+", delete=False) as config,
         ):
+            underlying_nodes = self._underlying_graph.get_nodes()
+            shifted = dict((n, i) for i, n in enumerate(underlying_nodes))
             np.save(node_layout, layout)
             np.save(
-                edge_data, np.array(self._underlying_graph.get_edges(), dtype=np.uint32)
+                edge_data,
+                np.array(
+                    [
+                        (shifted[u], shifted[v])
+                        for u, v in self._underlying_graph.get_edges()
+                    ],
+                    dtype=np.uint32,
+                ),
             )
             np.save(
                 weight_data,
@@ -455,7 +476,7 @@ class LabeledGraph:
             np.save(
                 label_data,
                 np.array(
-                    list(str(label) for label in self._label_data.keys()),
+                    list(str(self._label_data.inverse[n]) for n in underlying_nodes),
                     dtype=np.unicode_,
                 ),
             )

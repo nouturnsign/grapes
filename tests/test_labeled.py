@@ -73,6 +73,14 @@ def test_labeled():
     with pytest.raises(grapes.GraphMissingEdgeError):
         g.remove_edge("D", "E")
 
+    g.remove_node("B")
+
+    assert g.nodes == ["A", "C", "D", "E"]
+    assert g.edges == {
+        ("A", "C"): 4.0,
+    }
+    assert sorted(g.get_component_sizes()) == [1, 1, 2]
+
 
 def test_labeled_conditions():
     g = grapes.LabeledGraph(is_directed=False, is_simple=True)

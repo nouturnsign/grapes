@@ -23,6 +23,12 @@ def test_dijkstras_correctness():
     assert g.shortest_path(1, 3, grapes.ShortestPathAlgorithm.DIJKSTRAS) == [1, 2, 3]
     assert g.shortest_path(1, 4, grapes.ShortestPathAlgorithm.DIJKSTRAS) == []
 
+    g.remove_edge(4, 5)
+    assert g.shortest_path(4, 5, grapes.ShortestPathAlgorithm.DIJKSTRAS) == []
+
+    g.remove_node(2)
+    assert g.shortest_path(1, 3, grapes.ShortestPathAlgorithm.DIJKSTRAS) == [1, 3]
+
 
 def test_dijkstras_errors():
     g = grapes.LabeledGraph()

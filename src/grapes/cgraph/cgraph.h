@@ -18,7 +18,7 @@ static PyObject    *Multigraph_new(PyTypeObject *type, PyObject *args,
                                    PyObject *kwds);
 static int          Multigraph_init(MultigraphObject *self, PyObject *args,
                                     PyObject *kwds);
-static PyMethodDef  Multigraph_methods[15];  // 1 more than listed below to
+static PyMethodDef  Multigraph_methods[16];  // 1 more than listed below to
                                              // include a sentinel value
 static PyObject *Multigraph_get_node_count(MultigraphObject *self,
                                            PyObject *Py_UNUSED(ignored));
@@ -34,6 +34,8 @@ static PyObject *Multigraph_add_node(MultigraphObject *self,
                                      PyObject         *Py_UNUSED(ignored));
 static PyObject *Multigraph_add_edge(MultigraphObject *self, PyObject *args,
                                      PyObject *kwds);
+static PyObject *Multigraph_remove_node(MultigraphObject *self, PyObject *args,
+                                        PyObject *kwds);
 static PyObject *Multigraph_remove_edge(MultigraphObject *self, PyObject *args,
                                         PyObject *kwds);
 static PyObject *Multigraph_dijkstra(MultigraphObject *self, PyObject *args,
@@ -53,8 +55,8 @@ static PyObject *Multigraph_compute_circular_layout(MultigraphObject *self,
 // internals
 int add_directed_edge_noinc(MultigraphObject *self, Py_ssize_t u, Py_ssize_t v,
                             double weight);
-int remove_directed_edge_nodec(Py_ssize_t **adj_list,
-                               Py_ssize_t *neighbor_count, Py_ssize_t u,
-                               Py_ssize_t v);
+void remove_directed_edge(Py_ssize_t **adj_list, double **weight,
+                          Py_ssize_t *neighbor_count, Py_ssize_t u,
+                          Py_ssize_t v);
 
 #endif  // GRAPES_GRAPES_CGRAPH_CGRAPH_H_
