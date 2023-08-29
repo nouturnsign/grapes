@@ -28,5 +28,5 @@ from .errors import (
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
 )
+from .labeled import LabeledGraph, ShortestPathAlgorithm
 from .renderer import GraphRenderer
-from .wrapper import LabeledGraph, ShortestPathAlgorithm
