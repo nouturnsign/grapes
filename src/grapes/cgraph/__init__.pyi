@@ -100,6 +100,14 @@ class Multigraph:
         :param v: node
         :type v: int
         """
+    def get_outdegree(self: Self, u: int) -> int:
+        """Get the outdegree for a given node.
+
+        :param u: Node
+        :type u: int
+        :returns: Outdegree
+        :rtype: int
+        """
     def dijkstra(self: Self, srcs: list[int], dst: int) -> tuple[list[int], list[int]]:
         """Multiple source Dijkstra's algorithm.
 

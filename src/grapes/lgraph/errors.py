@@ -80,6 +80,17 @@ class AlgorithmPreconditionError(Exception):
         super().__init__(message)
 
 
+class WrongGraphTypeError(AlgorithmPreconditionError):
+    """Raised when the given algorithm expected a different kind of graph.
+
+    :param message: Precondition.
+    :type message: str
+    """
+
+    def __init__(self: Self, message: str) -> None:
+        super().__init__(message)
+
+
 class NegativeCycleError(AlgorithmPreconditionError):
     """Raised when the given algorithm detects a negative-weight cycle.
 

@@ -5,17 +5,18 @@ visualization and providing a thin Pythonic wrapper.
 """
 
 __all__ = [
-    "LabeledGraph",
-    "ShortestPathAlgorithm",
-    "GraphRenderer",
-    "GraphMissingNodeError",
+    "AlgorithmPreconditionError",
     "GraphDuplicateNodeError",
     "GraphMissingEdgeError",
-    "SimpleGraphWithLoopError",
-    "SimpleGraphWithDuplicateEdgeError",
-    "AlgorithmPreconditionError",
+    "GraphMissingNodeError",
+    "GraphRenderer",
+    "LabeledGraph",
     "NegativeCycleError",
     "RendererInvalidInputError",
+    "ShortestPathAlgorithm",
+    "SimpleGraphWithDuplicateEdgeError",
+    "SimpleGraphWithLoopError",
+    "WrongGraphTypeError",
 ]
 
 from .errors import (
@@ -27,6 +28,7 @@ from .errors import (
     RendererInvalidInputError,
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
+    WrongGraphTypeError,
 )
 from .labeled import LabeledGraph, ShortestPathAlgorithm
 from .renderer import GraphRenderer

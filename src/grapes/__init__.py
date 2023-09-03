@@ -2,17 +2,18 @@
 
 __all__ = [
     "Multigraph",
-    "LabeledGraph",
-    "ShortestPathAlgorithm",
-    "GraphRenderer",
+    "AlgorithmPreconditionError",
+    "GraphDuplicateNodeError",
     "GraphMissingEdgeError",
     "GraphMissingNodeError",
-    "GraphDuplicateNodeError",
-    "SimpleGraphWithLoopError",
-    "SimpleGraphWithDuplicateEdgeError",
-    "AlgorithmPreconditionError",
+    "GraphRenderer",
+    "LabeledGraph",
     "NegativeCycleError",
     "RendererInvalidInputError",
+    "ShortestPathAlgorithm",
+    "SimpleGraphWithDuplicateEdgeError",
+    "SimpleGraphWithLoopError",
+    "WrongGraphTypeError",
     "colors",
 ]
 
@@ -29,5 +30,6 @@ from .lgraph import (
     ShortestPathAlgorithm,
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
+    WrongGraphTypeError,
     colors,
 )

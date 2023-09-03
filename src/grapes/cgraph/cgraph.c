@@ -6,6 +6,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include "centrality.h"
 #include "deque.h"
 #include "heap.h"
 #include "macros.h"
@@ -206,6 +207,8 @@ static PyMethodDef Multigraph_methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Remove a node."},
     {"remove_edge", (PyCFunction) Multigraph_remove_edge,
      METH_VARARGS | METH_KEYWORDS, "Remove an edge."},
+    {"get_outdegree", (PyCFunction) Multigraph_get_outdegree,
+     METH_VARARGS | METH_KEYWORDS, "Get the outdegree for a given node."},
     {"dijkstra", (PyCFunction) Multigraph_dijkstra,
      METH_VARARGS | METH_KEYWORDS, "Multiple source Dijkstra's algorithm."},
     {"bellman_ford", (PyCFunction) Multigraph_bellman_ford,
@@ -627,6 +630,20 @@ remove_directed_edge(Py_ssize_t **adj_list, double **weight,
     adj_list[u][j] = adj_list[u][neighbor_count[u]];
     weight[u][j] = weight[u][neighbor_count[u]];
     return;
+}
+
+static PyObject *
+Multigraph_get_outdegree(MultigraphObject *self, PyObject *args,
+                         PyObject *kwds)
+{
+    static char *kwlist[] = {"u", NULL};
+    Py_ssize_t   u;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &u)) {
+        return NULL;
+    }
+
+    return PyLong_FromSsize_t(centrality_outdegree(self->neighbor_count, u));
 }
 
 static PyObject *

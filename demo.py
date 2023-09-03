@@ -16,6 +16,7 @@ g.add_edge("4", "2", weight=-1)
 
 print(g.nodes)
 print(g.edges)
+print(g.get_outdegree("2"))
 print(g.shortest_path("4", "3"))
 print(g.shortest_path("2", "3"))
 print(g.shortest_path("2", "4"))

@@ -26,6 +26,7 @@ from .errors import (
     NegativeCycleError,
     SimpleGraphWithDuplicateEdgeError,
     SimpleGraphWithLoopError,
+    WrongGraphTypeError,
 )
 from .invmap import InvertibleMapping
 from .renderer import GraphRenderer
@@ -240,6 +241,44 @@ class LabeledGraph:
             )
         except ValueError:
             raise GraphMissingEdgeError(u_label, v_label)
+
+    def get_degree(self: Self, label: Hashable) -> int:
+        """Get the degree of a given node.
+
+        :param label: Node
+        :type label: Hashable
+        :raises GraphMissingNodeError: Graph is missing the node.
+        :raises WrongGraphTypeError: Attempted to call this method on a
+            directed graph.
+        :returns: Degree of node.
+        :rtype: int
+        """
+        if self.is_directed:
+            raise WrongGraphTypeError(
+                "Expected an undirected graph; got a directed graph."
+            )
+        if label not in self._label_data:
+            raise GraphMissingNodeError(label)
+        return self._underlying_graph.get_outdegree(self._label_data[label])
+
+    def get_outdegree(self: Self, label: Hashable) -> int:
+        """Get the outdegree of a given node.
+
+        :param label: Node
+        :type label: Hashable
+        :raises GraphMissingNodeError: Graph is missing the node.
+        :raises WrongGraphTypeError: Attempted to call this method on an
+            undirected graph.
+        :returns: Outdegree of node.
+        :rtype: int
+        """
+        if not self.is_directed:
+            raise WrongGraphTypeError(
+                "Expected a directed graph; got an undirected graph."
+            )
+        if label not in self._label_data:
+            raise GraphMissingNodeError(label)
+        return self._underlying_graph.get_outdegree(self._label_data[label])
 
     def shortest_path(
         self: Self,

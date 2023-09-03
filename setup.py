@@ -7,6 +7,7 @@ grapes_ext = Extension(
     "cgraph",
     sources=[
         "src/grapes/cgraph/cgraph.c",
+        "src/grapes/cgraph/centrality.c",
         "src/grapes/cgraph/deque.c",
         "src/grapes/cgraph/heap.c",
         "src/grapes/cgraph/visit.c",

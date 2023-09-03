@@ -33,6 +33,7 @@ def test_labeled():
         ("B", "C"): 2.5,
         ("D", "E"): 1.0,
     }
+    assert g.get_degree("A") == 2
 
     with pytest.raises(grapes.GraphMissingNodeError):
         g.add_edge("F", "G")
@@ -48,6 +49,12 @@ def test_labeled():
 
     with pytest.raises(grapes.SimpleGraphWithDuplicateEdgeError):
         g.add_edge("A", "B")
+
+    with pytest.raises(grapes.GraphMissingNodeError):
+        g.get_degree("F")
+
+    with pytest.raises(grapes.WrongGraphTypeError):
+        g.get_outdegree("A")
 
     assert not g.is_connected()
     assert not g.is_bipartite()
