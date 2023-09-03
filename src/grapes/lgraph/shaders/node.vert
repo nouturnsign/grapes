@@ -1,8 +1,6 @@
 #version 330
 
 uniform mat4 mvp;
-uniform float node_radius;
-uniform vec4 fill_color;
 
 in vec2 in_vert;
 
