@@ -1,3 +1,5 @@
+# noqa: D100
+
 import numpy as np
 
 import grapes
