@@ -1,5 +1,5 @@
 moderngl>=5.7.0
 moderngl-window>=2.4.3
 numpy>=1.23.2
-Pillow>=9,<10
+Pillow>=10.0.1,<10
 typing-extensions>=4.6.0
